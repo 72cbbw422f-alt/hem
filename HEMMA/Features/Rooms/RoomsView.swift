@@ -18,12 +18,26 @@ struct RoomsView: View {
                     } else {
                         ForEach(store.homes, id: \.uniqueIdentifier) { home in
                             ForEach(home.rooms, id: \.uniqueIdentifier) { room in
-                                NavigationLink {
-                                    RoomDetailView(room: room, store: store)
-                                } label: {
-                                    roomCard(room)
+                                HStack(spacing: 10) {
+                                    NavigationLink {
+                                        RoomDetailView(room: room, store: store)
+                                    } label: {
+                                        roomCard(room)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    Button {
+                                        store.toggleFavorite(room)
+                                    } label: {
+                                        Image(systemName: store.isFavorite(room) ? "star.fill" : "star")
+                                            .font(.headline)
+                                            .foregroundStyle(store.isFavorite(room) ? HEMMATheme.amber : HEMMATheme.secondaryText)
+                                            .frame(width: 48, height: 58)
+                                            .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 15))
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(store.isFavorite(room) ? "Ta bort favorit" : "Lägg till favorit")
                                 }
-                                .buttonStyle(.plain)
                             }
                         }
                     }
