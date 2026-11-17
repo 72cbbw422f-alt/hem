@@ -155,15 +155,9 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         homes.flatMap(visibleRooms(in:)).filter(isFavorite)
     }
 
-    /// A hub-only assignment (for example an Apple TV named Hemmabio) is not a room to navigate.
-    func isHomeHubAccessory(_ accessory: HMAccessory) -> Bool {
-        accessory.category.categoryType == HMAccessoryCategoryTypeTelevision
-    }
-
+    /// The Apple TV hub is named "Hemmabio" in this HomeKit setup, not a physical room.
     func visibleRooms(in home: HMHome) -> [HMRoom] {
-        home.rooms.filter { room in
-            !room.accessories.isEmpty && !room.accessories.allSatisfy(isHomeHubAccessory)
-        }
+        home.rooms.filter { $0.name.localizedCaseInsensitiveCompare("Hemmabio") != .orderedSame }
     }
 
     var roomCount: Int {
@@ -187,7 +181,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     var homeHubName: String {
-        homes.flatMap(\.accessories).first(where: isHomeHubAccessory)?.name ?? "Apple TV"
+        homes.flatMap(\.accessories).first(where: { $0.name.localizedCaseInsensitiveCompare("Hemmabio") == .orderedSame })?.name ?? "Apple TV"
     }
 
     var homeHubStatus: String {
