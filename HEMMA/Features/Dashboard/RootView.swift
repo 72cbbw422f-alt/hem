@@ -13,7 +13,7 @@ struct RootView: View {
                 .tabItem { Label("Enheter", systemImage: "lightbulb.2") }
             ScenesView()
                 .tabItem { Label("Scener", systemImage: "sparkles") }
-            PlaceholderView(title: "Inställningar", symbol: "gearshape.fill")
+            SettingsView()
                 .tabItem { Label("Inställningar", systemImage: "gearshape.fill") }
         }
         .tint(HEMMATheme.amber)
