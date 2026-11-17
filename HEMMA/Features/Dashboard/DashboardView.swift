@@ -3,6 +3,7 @@ import HomeKit
 
 struct DashboardView: View {
     @EnvironmentObject private var homeStore: HomeKitStore
+    @Binding var selectedTab: Int
 
     private var allRooms: [HMRoom] {
         homeStore.homes.flatMap(homeStore.visibleRooms(in:)).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -49,6 +50,18 @@ struct DashboardView: View {
                     .tracking(1.8)
                     .foregroundStyle(HEMMATheme.secondaryText)
                 Spacer()
+                Button {
+                    selectedTab = 4
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(HEMMATheme.warmWhite)
+                        .frame(width: 42, height: 42)
+                        .background(HEMMATheme.surface, in: Circle())
+                        .overlay(Circle().strokeBorder(.white.opacity(0.06), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Öppna inställningar")
             }
             Text("Hemma")
                 .font(.system(size: 38, weight: .bold, design: .rounded))
