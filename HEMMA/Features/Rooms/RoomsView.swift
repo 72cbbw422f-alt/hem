@@ -390,14 +390,34 @@ struct LightControlCard: View {
             .disabled(!accessory.isReachable || store.powerState(for: accessory) == nil || store.isPowerCommandPending(for: accessory))
 
             if store.brightnessCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Ljusstyrka", type: HMCharacteristicTypeBrightness, value: $brightnessValue, isEditing: $editingBrightness, range: 0...100, suffix: "%") { store.setBrightness($0, for: accessory) }
+                controlSlider(title: "Ljusstyrka", value: $brightnessValue, range: 0...100, suffix: "%", tint: HEMMATheme.amber, isEditing: $editingBrightness) { store.setBrightness($0, for: accessory) }
             }
             if store.colorTemperatureCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgtemperatur", type: HMCharacteristicTypeColorTemperature, value: $temperatureValue, isEditing: $editingTemperature, range: 2000...6500, suffix: " K") { store.setColorTemperature(kelvin: $0, for: accessory) }
+                presetSection(title: "Ljuston", presets: [
+                    ("Varm", 2700.0, Color(red: 1.0, green: 0.66, blue: 0.34)),
+                    ("Naturlig", 4000.0, Color(red: 1.0, green: 0.91, blue: 0.72)),
+                    ("Kall", 6000.0, Color(red: 0.70, green: 0.82, blue: 1.0))
+                ], selectedValue: temperatureValue, unit: "K") { value in
+                    temperatureValue = value
+                    store.setColorTemperature(kelvin: value, for: accessory)
+                }
             }
             if store.hueCharacteristic(for: accessory) != nil, store.saturationCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgton", type: HMCharacteristicTypeHue, value: $hueValue, isEditing: $editingHue, range: 0...360, suffix: "°") { store.setHue($0, for: accessory) }
-                controlSlider(title: "Färgmättnad", type: HMCharacteristicTypeSaturation, value: $saturationValue, isEditing: $editingSaturation, range: 0...100, suffix: "%") { store.setSaturation($0, for: accessory) }
+                presetSection(title: "Ljusfärg", presets: [
+                    ("Varmvit", 35.0, Color(red: 1.0, green: 0.72, blue: 0.40)),
+                    ("Röd", 0.0, .red),
+                    ("Orange", 28.0, .orange),
+                    ("Gul", 52.0, .yellow),
+                    ("Grön", 120.0, .green),
+                    ("Blå", 220.0, .blue),
+                    ("Lila", 275.0, .purple),
+                    ("Rosa", 325.0, .pink)
+                ], selectedValue: hueValue, unit: "°") { value in
+                    hueValue = value
+                    saturationValue = 100
+                    store.setSaturation(100, for: accessory)
+                    store.setHue(value, for: accessory)
+                }
             }
         }
         .padding(17)
@@ -410,21 +430,59 @@ struct LightControlCard: View {
         .onChange(of: store.revision) { _, _ in syncValues() }
     }
 
-    private func controlSlider(title: String, type: String, value: Binding<Double>, isEditing: Binding<Bool>, range: ClosedRange<Double>, suffix: String, onCommit: @escaping (Double) -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 7) {
+    private func controlSlider(title: String, value: Binding<Double>, range: ClosedRange<Double>, suffix: String, tint: Color, isEditing: Binding<Bool>, onCommit: @escaping (Double) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text(title).font(.caption.weight(.medium)).foregroundStyle(HEMMATheme.secondaryText)
+                Text(title).font(.subheadline.weight(.semibold)).foregroundStyle(HEMMATheme.secondaryText)
                 Spacer()
                 Text("\(Int(value.wrappedValue.rounded()))\(suffix)")
-                    .font(.caption.monospacedDigit())
+                    .font(.subheadline.weight(.semibold).monospacedDigit())
                     .foregroundStyle(HEMMATheme.warmWhite)
             }
             Slider(value: value, in: range) { editing in
                 isEditing.wrappedValue = editing
                 if !editing { onCommit(value.wrappedValue) }
             }
-            .tint(HEMMATheme.amber)
+            .tint(tint)
+            .scaleEffect(x: 1, y: 1.18, anchor: .center)
+            .padding(.vertical, 3)
             .disabled(!accessory.isReachable)
+        }
+    }
+
+    private func presetSection(title: String, presets: [(String, Double, Color)], selectedValue: Double, unit: String, onSelect: @escaping (Double) -> Void) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(HEMMATheme.secondaryText)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 9) {
+                ForEach(Array(presets.enumerated()), id: \.offset) { _, preset in
+                    Button {
+                        onSelect(preset.1)
+                    } label: {
+                        VStack(spacing: 7) {
+                            Circle()
+                                .fill(preset.2.gradient)
+                                .frame(width: 25, height: 25)
+                                .overlay(Circle().strokeBorder(.white.opacity(0.22), lineWidth: 1))
+                            Text(preset.0)
+                                .font(.caption2.weight(.semibold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
+                                .foregroundStyle(HEMMATheme.warmWhite)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 13))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 13)
+                                .strokeBorder(abs(selectedValue - preset.1) < 4 ? HEMMATheme.amber : .white.opacity(0.05), lineWidth: 1.3)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!accessory.isReachable)
+                }
+            }
         }
     }
 
