@@ -9,6 +9,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var isLoading = true
     @Published private(set) var errorMessage: String?
     @Published private(set) var revision = 0
+    @Published private(set) var pendingPowerAccessoryIDs: Set<UUID> = []
 
     private let manager = HMHomeManager()
 
@@ -181,14 +182,22 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         lightAccessories.forEach { setPower(isOn, for: $0) }
     }
 
+    func isPowerCommandPending(for accessory: HMAccessory) -> Bool {
+        pendingPowerAccessoryIDs.contains(accessory.uniqueIdentifier)
+    }
+
     func setPower(_ isOn: Bool, for accessory: HMAccessory) {
+        guard !isPowerCommandPending(for: accessory) else { return }
         guard accessory.isReachable, let characteristic = powerCharacteristic(for: accessory) else {
             errorMessage = "\(accessory.name) kan inte nås just nu."
             revision += 1
             return
         }
+        pendingPowerAccessoryIDs.insert(accessory.uniqueIdentifier)
+        revision += 1
         characteristic.writeValue(isOn) { [weak self] error in
             Task { @MainActor in
+                self?.pendingPowerAccessoryIDs.remove(accessory.uniqueIdentifier)
                 if let error {
                     self?.errorMessage = "Kunde inte styra \(accessory.name): \(error.localizedDescription)"
                 } else {
