@@ -19,6 +19,7 @@ targets:
       properties:
         NSHomeKitUsageDescription: "HEMMA behöver åtkomst till ditt hem för att visa och styra dina kompatibla tillbehör."
         UILaunchStoryboardName: LaunchScreen
+        UIRequiresFullScreen: true
         CFBundleURLTypes:
           - CFBundleURLName: se.hemma.app
             CFBundleURLSchemes:
