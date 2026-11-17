@@ -30,20 +30,20 @@ struct RoomsView: View {
                     } else if store.homes.isEmpty {
                         messageCard("Inga rum hittades", detail: "Kontrollera att ditt hem är konfigurerat i Apples Hem-app.")
                     } else {
-                        ForEach(store.homes, id: \\.uniqueIdentifier) { home in
+                        ForEach(store.homes, id: \.uniqueIdentifier) { home in
                             VStack(alignment: .leading, spacing: 13) {
                                 HStack {
                                     Text(home.name)
                                         .font(.title3.weight(.bold))
                                         .foregroundStyle(HEMMATheme.warmWhite)
                                     Spacer()
-                                    Text("\\(home.rooms.count) RUM")
+                                    Text("\(home.rooms.count) RUM")
                                         .font(.caption2.weight(.bold))
                                         .tracking(1.1)
                                         .foregroundStyle(HEMMATheme.secondaryText)
                                 }
                                 LazyVGrid(columns: columns, spacing: 12) {
-                                    ForEach(home.rooms, id: \\.uniqueIdentifier) { room in
+                                    ForEach(home.rooms, id: \.uniqueIdentifier) { room in
                                         roomTile(room)
                                     }
                                 }
@@ -97,7 +97,7 @@ struct RoomsView: View {
                     HStack(spacing: 5) {
                         Image(systemName: "lightbulb.fill")
                             .font(.caption2)
-                        Text("\\(room.accessories.filter(store.isLight).count) lampor")
+                        Text("\(room.accessories.filter(store.isLight).count) lampor")
                             .font(.caption)
                     }
                     .foregroundStyle(.white.opacity(0.76))
@@ -200,7 +200,7 @@ struct RoomDetailView: View {
                         Text(room.name)
                             .font(.system(size: 34, weight: .bold, design: .rounded))
                             .foregroundStyle(HEMMATheme.warmWhite)
-                        Text("\\(lights.count) lampor · Apple Hem")
+                        Text("\(lights.count) lampor · Apple Hem")
                             .font(.subheadline)
                             .foregroundStyle(HEMMATheme.secondaryText)
                     }
@@ -234,13 +234,13 @@ struct RoomDetailView: View {
                     .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 20))
                 }
                 .buttonStyle(.plain)
-                .disabled(!lights.contains(where: \\.isReachable) || lights.contains(where: store.isPowerCommandPending(for:)))
+                .disabled(!lights.contains(where: \.isReachable) || lights.contains(where: store.isPowerCommandPending(for:)))
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Belysning")
                         .font(.title3.weight(.bold))
                         .foregroundStyle(HEMMATheme.warmWhite)
-                    ForEach(lights, id: \\.uniqueIdentifier) { accessory in
+                    ForEach(lights, id: \.uniqueIdentifier) { accessory in
                         LightControlCard(accessory: accessory, store: store)
                     }
                     if lights.isEmpty {
@@ -353,7 +353,7 @@ private struct LightControlCard: View {
             HStack {
                 Text(title).font(.caption.weight(.medium)).foregroundStyle(HEMMATheme.secondaryText)
                 Spacer()
-                Text("\\(Int(value.wrappedValue.rounded()))\\(suffix)")
+                Text("\(Int(value.wrappedValue.rounded()))\(suffix)")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(HEMMATheme.warmWhite)
             }
