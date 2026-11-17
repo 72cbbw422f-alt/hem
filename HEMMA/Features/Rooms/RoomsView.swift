@@ -295,14 +295,10 @@ struct RoomDetailView: View {
         let isSelected = selectedLight?.uniqueIdentifier == accessory.uniqueIdentifier
         let isOn = store.powerState(for: accessory) == true
         return Button {
-            if selectedLightID == accessory.uniqueIdentifier {
-                if accessory.isReachable, store.powerState(for: accessory) != nil,
-                   !store.isPowerCommandPending(for: accessory) {
-                    store.setPower(!isOn, for: accessory)
-                }
-            } else {
-                selectedLightID = accessory.uniqueIdentifier
-            }
+            selectedLightID = accessory.uniqueIdentifier
+            guard accessory.isReachable, store.powerState(for: accessory) != nil,
+                  !store.isPowerCommandPending(for: accessory) else { return }
+            store.setPower(!isOn, for: accessory)
         } label: {
             VStack(spacing: 9) {
                 Image(systemName: isOn ? "lightbulb.fill" : "lightbulb")
@@ -329,7 +325,7 @@ struct RoomDetailView: View {
         }
         .buttonStyle(.plain)
         .disabled(!accessory.isReachable || store.isPowerCommandPending(for: accessory))
-        .accessibilityLabel("\(accessory.name), \(isOn ? "på" : "av"). Välj lampan, tryck igen för att växla.")
+        .accessibilityLabel("\(accessory.name), \(isOn ? "på" : "av"). Tryck för att växla och välja ljusstyrka.")
     }
 
     private var roomSymbol: String {
