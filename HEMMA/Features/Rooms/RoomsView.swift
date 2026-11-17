@@ -112,9 +112,12 @@ private struct LightControlCard: View {
     let accessory: HMAccessory
     @ObservedObject var store: HomeKitStore
     @State private var brightnessValue: Double = 50
+    @State private var temperatureValue: Double = 2700
+    @State private var hueValue: Double = 0
+    @State private var saturationValue: Double = 100
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 17) {
             HStack {
                 Image(systemName: "lightbulb.fill")
                     .foregroundStyle(HEMMATheme.amber)
@@ -140,29 +143,64 @@ private struct LightControlCard: View {
                         .foregroundStyle(HEMMATheme.secondaryText)
                 }
             }
+
             if store.brightnessCharacteristic(for: accessory) != nil {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Ljusstyrka")
-                            .font(.subheadline)
-                            .foregroundStyle(HEMMATheme.secondaryText)
-                        Spacer()
-                        Text("\(Int(brightnessValue.rounded())) %")
-                            .font(.subheadline.monospacedDigit())
-                            .foregroundStyle(HEMMATheme.warmWhite)
-                    }
-                    Slider(value: $brightnessValue, in: 0...100) { editing in
-                        if !editing { store.setBrightness(brightnessValue, for: accessory) }
-                    }
-                    .tint(HEMMATheme.amber)
-                    .disabled(!accessory.isReachable)
-                    .onAppear {
-                        brightnessValue = store.brightness(for: accessory) ?? 50
-                    }
+                controlSlider(title: "Ljusstyrka", value: $brightnessValue, range: 0...100, suffix: "%") { value in
+                    store.setBrightness(value, for: accessory)
+                }
+            }
+
+            if store.colorTemperatureCharacteristic(for: accessory) != nil {
+                controlSlider(title: "Färgtemperatur", value: $temperatureValue, range: 2000...6500, suffix: " K") { value in
+                    store.setColorTemperature(kelvin: value, for: accessory)
+                }
+            }
+
+            if store.hueCharacteristic(for: accessory) != nil,
+               store.saturationCharacteristic(for: accessory) != nil {
+                controlSlider(title: "Färgton", value: $hueValue, range: 0...360, suffix: "°") { value in
+                    store.setHue(value, for: accessory)
+                }
+                controlSlider(title: "Färgmättnad", value: $saturationValue, range: 0...100, suffix: "%") { value in
+                    store.setSaturation(value, for: accessory)
                 }
             }
         }
         .padding(18)
         .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
+        .onAppear(perform: syncValues)
+        .onChange(of: store.revision) { _, _ in syncValues() }
+    }
+
+    private func controlSlider(
+        title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        suffix: String,
+        onCommit: @escaping (Double) -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(HEMMATheme.secondaryText)
+                Spacer()
+                Text("\(Int(value.wrappedValue.rounded()))\(suffix)")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(HEMMATheme.warmWhite)
+            }
+            Slider(value: value, in: range) { editing in
+                if !editing { onCommit(value.wrappedValue) }
+            }
+            .tint(HEMMATheme.amber)
+            .disabled(!accessory.isReachable)
+        }
+    }
+
+    private func syncValues() {
+        brightnessValue = store.brightness(for: accessory) ?? brightnessValue
+        temperatureValue = store.colorTemperatureKelvin(for: accessory) ?? temperatureValue
+        hueValue = store.hue(for: accessory) ?? hueValue
+        saturationValue = store.saturation(for: accessory) ?? saturationValue
     }
 }
