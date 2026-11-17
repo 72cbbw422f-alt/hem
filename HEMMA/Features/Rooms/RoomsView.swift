@@ -77,30 +77,22 @@ struct RoomsView: View {
             RoomDetailView(room: room, store: store)
         } label: {
             ZStack(alignment: .bottomLeading) {
-                roomGradient(for: room.name)
-                Image(systemName: roomSymbol(for: room.name))
-                    .font(.system(size: 54, weight: .ultraLight))
-                    .foregroundStyle(.white.opacity(0.22))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .padding(14)
-                Circle()
-                    .fill(HEMMATheme.amber.opacity(0.18))
-                    .frame(width: 90, height: 90)
-                    .blur(radius: 26)
-                    .offset(x: 80, y: -45)
+                AsyncImage(url: RoomPhotography.image(for: room.name)) { phase in
+                    switch phase {
+                    case .success(let image): image.resizable().scaledToFill()
+                    default: roomGradient(for: room.name)
+                    }
+                }
+                .frame(height: 158)
+                .clipped()
                 LinearGradient(colors: [.clear, .black.opacity(0.78)], startPoint: .center, endPoint: .bottom)
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(room.name)
-                        .font(.headline.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
+                    Text(room.name).font(.headline.weight(.semibold)).foregroundStyle(.white).lineLimit(1)
                     HStack(spacing: 5) {
-                        Image(systemName: "lightbulb.fill")
-                            .font(.caption2)
-                        Text("\(room.accessories.filter(store.isLight).count) lampor")
-                            .font(.caption)
+                        Image(systemName: "lightbulb.fill").font(.caption2)
+                        Text("\(room.accessories.filter(store.isLight).count) lampor").font(.caption)
                     }
-                    .foregroundStyle(.white.opacity(0.76))
+                    .foregroundStyle(.white.opacity(0.82))
                 }
                 .padding(14)
                 VStack {
@@ -113,7 +105,7 @@ struct RoomsView: View {
                                 .font(.caption.weight(.bold))
                                 .foregroundStyle(store.isFavorite(room) ? HEMMATheme.amber : .white)
                                 .frame(width: 32, height: 32)
-                                .background(.black.opacity(0.30), in: Circle())
+                                .background(.black.opacity(0.38), in: Circle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(store.isFavorite(room) ? "Ta bort favorit" : "Lägg till favorit")
@@ -126,8 +118,9 @@ struct RoomsView: View {
             .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 21, style: .continuous)
-                    .strokeBorder(.white.opacity(0.08), lineWidth: 1)
+                    .strokeBorder(.white.opacity(0.10), lineWidth: 1)
             }
+            .shadow(color: .black.opacity(0.22), radius: 10, y: 5)
         }
         .buttonStyle(.plain)
     }
