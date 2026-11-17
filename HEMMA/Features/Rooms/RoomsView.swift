@@ -291,7 +291,7 @@ struct RoomDetailView: View {
     }
 }
 
-private struct LightControlCard: View {
+struct LightControlCard: View {
     let accessory: HMAccessory
     @ObservedObject var store: HomeKitStore
     @State private var brightnessValue: Double = 50
