@@ -18,6 +18,9 @@ struct RootView: View {
                 .tabItem { Label("Inställningar", systemImage: "gearshape.fill") }
         }
         .tint(HEMMATheme.amber)
+        .toolbarBackground(HEMMATheme.surface, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .background(HEMMATheme.background.ignoresSafeArea())
         .environmentObject(homeStore)
         .onOpenURL { url in
             guard url.scheme == "hemma", url.host == "lights", url.path == "/toggle" else { return }
