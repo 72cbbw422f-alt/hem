@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "HEMMA/**"
+      - "HEMMAWidget/**"
       - "project.yml"
       - ".github/workflows/ios-build.yml"
 
@@ -26,6 +27,11 @@ jobs:
         run: xcodegen generate
       - name: Build for device
         run: xcodebuild -project HEMMA.xcodeproj -scheme HEMMA -sdk iphoneos -configuration Debug -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Verify embedded widget
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Debug-iphoneos/HEMMA.app"
+          test -d "$APP_PATH/PlugIns/HEMMAWidget.appex"
+          /usr/libexec/PlistBuddy -c "Print :NSExtension:NSExtensionPointIdentifier" "$APP_PATH/PlugIns/HEMMAWidget.appex/Info.plist" | grep -Fx "com.apple.widgetkit-extension"
       - name: Package unsigned IPA
         run: |
           mkdir -p build/Payload
