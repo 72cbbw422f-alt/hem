@@ -52,12 +52,19 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 - Complex automation authoring.
 - Apple Watch app.
 
-## Widget implementation constraints (verified against Apple documentation)
-- Interactive WidgetKit buttons and toggles invoke App Intents. The intent must finish the action and persist any required result before returning; WidgetKit then reloads the timeline.
-- Widget extensions execute in a separate process. App Intents can declare supported execution modes and allowed execution targets; choose these deliberately after validating where HomeKit access is authorized and available.
+## Widget implementation constraints (checked against Apple App Intents documentation, November 2026)
+- Interactive WidgetKit buttons and toggles invoke App Intents. The intent must complete its action and any required persistence before returning; request a timeline reload after a successful command.
+- Widget extensions execute in a separate process. Code placed in an app extension runs in the background; App Intent code placed in the main app bundle can run in the foreground or background.
+- Apple's `allowedExecutionTargets` can restrict an intent to `.main`, but this is not a magic bridge to the app's in-memory objects. The intent must be packaged and discoverable in the relevant targets as Apple documents, and it must create or obtain its own HomeKit manager in the process where it executes.
+- WidgetKit Control widgets have additional runtime rules: their control intent runs from the widget extension in the background. Do not assume that setting `.main` makes a Control widget action execute in the app process.
+- Before choosing a standard interactive widget versus a Control widget, build a minimal proof of concept using the exact CI Xcode SDK and test a real HomeKit write on a physical iPhone with the intended sideload signing profile. If the process cannot access HomeKit reliably, the widget must open HEMMA rather than report a false success.
 - Do not assume that an intent running in the widget extension can reuse the main app's in-memory HomeKit manager.
-- Prefer an App Intent that is restricted to the main app process when the action needs the app's HomeKit access; Apple's current App Intents guidance documents `.main` as an execution target. Validate the exact SDK availability on the CI Xcode version before implementation.
 - Widget timeline content must not imply a live HomeKit state unless it has been read from an authorized HomeKit manager. Unknown or stale values must be labelled as such.
 - Keep the first widget iteration conservative: prove an end-to-end all-lights action and confirmed result before adding room-specific controls.
 - App Group storage is not assumed for the sideload build. Do not make it a prerequisite until its signing and provisioning implications are validated for the distribution route.
 - HomeKit authorization is determined from `HMHomeManager.authorizationStatus`; never infer authorization merely because the homes callback ran.
+
+### Apple documentation reviewed
+- [Adopting App Intents to support system experiences](https://developer.apple.com/documentation/appintents/adopting-app-intents-to-support-system-experiences)
+- [IntentExecutionTargets](https://developer.apple.com/documentation/appintents/intentexecutiontargets)
+- [Configuring the runtime behavior of your app intents](https://developer.apple.com/documentation/appintents/configuring-the-runtime-behavior-of-your-app-intents)
