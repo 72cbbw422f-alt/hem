@@ -1,0 +1,101 @@
+import SwiftUI
+import WidgetKit
+
+private enum HEMMAWidgetStyle {
+    static let background = Color(red: 0.055, green: 0.063, blue: 0.078)
+    static let surface = Color(red: 0.12, green: 0.13, blue: 0.15)
+    static let amber = Color(red: 0.96, green: 0.66, blue: 0.27)
+    static let secondary = Color(red: 0.66, green: 0.67, blue: 0.69)
+}
+
+struct HEMMAWidgetEntry: TimelineEntry {
+    let date: Date
+}
+
+struct HEMMAWidgetProvider: TimelineProvider {
+    func placeholder(in context: Context) -> HEMMAWidgetEntry {
+        HEMMAWidgetEntry(date: .now)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (HEMMAWidgetEntry) -> Void) {
+        completion(HEMMAWidgetEntry(date: .now))
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<HEMMAWidgetEntry>) -> Void) {
+        completion(Timeline(entries: [HEMMAWidgetEntry(date: .now)], policy: .never))
+    }
+}
+
+struct HEMMALightingWidget: Widget {
+    let kind = "HEMMALightingWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: HEMMAWidgetProvider()) { _ in
+            HEMMALightingWidgetView()
+                .containerBackground(HEMMAWidgetStyle.background, for: .widget)
+        }
+        .configurationDisplayName("HEMMA – Belysning")
+        .description("Öppna HEMMA och styr belysningen i ditt hem.")
+        .supportedFamilies([.systemSmall, .systemMedium])
+    }
+}
+
+private struct HEMMALightingWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "lightbulb.2.fill")
+                    .foregroundStyle(HEMMAWidgetStyle.amber)
+                Text("HEMMA")
+                    .font(.caption.weight(.bold))
+                    .tracking(1.2)
+                    .foregroundStyle(.white)
+                Spacer()
+                Image(systemName: "house.fill")
+                    .foregroundStyle(HEMMAWidgetStyle.secondary)
+            }
+
+            Spacer(minLength: 0)
+
+            Link(destination: URL(string: "hemma://lights/toggle")!) {
+                HStack(spacing: 12) {
+                    Image(systemName: "power")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(HEMMAWidgetStyle.background)
+                        .frame(width: 44, height: 44)
+                        .background(HEMMAWidgetStyle.amber, in: RoundedRectangle(cornerRadius: 14))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Styr belysningen")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                        Text("Öppna HEMMA")
+                            .font(.caption)
+                            .foregroundStyle(HEMMAWidgetStyle.secondary)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(HEMMAWidgetStyle.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            if family == .systemMedium {
+                Text("Tryck för att öppna och styra alla lampor")
+                    .font(.caption2)
+                    .foregroundStyle(HEMMAWidgetStyle.secondary)
+                    .lineLimit(1)
+            }
+        }
+        .padding(16)
+    }
+}
+
+@main
+struct HEMMAWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        HEMMALightingWidget()
+    }
+}
