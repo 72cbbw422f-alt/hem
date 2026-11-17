@@ -28,6 +28,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: se.hemma.app
         PRODUCT_NAME: HEMMA
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_ENTITLEMENTS: HEMMA/HEMMA.entitlements
         SWIFT_VERSION: "5.0"
@@ -48,6 +50,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: se.hemma.app.widget
         PRODUCT_NAME: HEMMAWidget
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
