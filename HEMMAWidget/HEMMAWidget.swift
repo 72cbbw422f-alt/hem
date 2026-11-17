@@ -2,10 +2,10 @@ import SwiftUI
 import WidgetKit
 
 private enum HEMMAWidgetStyle {
-    static let background = Color(red: 0.055, green: 0.063, blue: 0.078)
-    static let surface = Color(red: 0.12, green: 0.13, blue: 0.15)
-    static let amber = Color(red: 0.96, green: 0.66, blue: 0.27)
-    static let secondary = Color(red: 0.66, green: 0.67, blue: 0.69)
+    static let background = Color(red: 0.035, green: 0.032, blue: 0.030)
+    static let surface = Color(red: 0.145, green: 0.124, blue: 0.105)
+    static let amber = Color(red: 1.0, green: 0.69, blue: 0.31)
+    static let secondary = Color(red: 0.665, green: 0.635, blue: 0.590)
 }
 
 struct HEMMAWidgetEntry: TimelineEntry {
@@ -32,7 +32,7 @@ struct HEMMALightingWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HEMMAWidgetProvider()) { _ in
             HEMMALightingWidgetView()
-                .containerBackground(HEMMAWidgetStyle.background, for: .widget)
+                .containerBackground(for: .widget) {\n                    LinearGradient(colors: [HEMMAWidgetStyle.surface, HEMMAWidgetStyle.background], startPoint: .topLeading, endPoint: .bottomTrailing)\n                }
         }
         .configurationDisplayName("HEMMA – Belysning")
         .description("Öppna HEMMA och styr belysningen i ditt hem.")
@@ -65,7 +65,7 @@ private struct HEMMALightingWidgetView: View {
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(HEMMAWidgetStyle.background)
                         .frame(width: 44, height: 44)
-                        .background(HEMMAWidgetStyle.amber, in: RoundedRectangle(cornerRadius: 14))
+                        .background(LinearGradient(colors: [HEMMAWidgetStyle.amber, Color(red: 0.82, green: 0.43, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 14))
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Styr belysningen")
                             .font(.headline)
