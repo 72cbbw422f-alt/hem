@@ -114,8 +114,9 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     func lightsAreOn(in room: HMRoom) -> Bool? {
         let lights = room.accessories.filter(isLight)
+        guard !lights.isEmpty, lights.allSatisfy(\.isReachable) else { return nil }
         let states = lights.compactMap(powerState(for:))
-        guard !lights.isEmpty, states.count == lights.count else { return nil }
+        guard states.count == lights.count else { return nil }
         return states.allSatisfy { $0 }
     }
 
@@ -225,8 +226,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     var allLightsAreOn: Bool? {
-        let states = lightAccessories.compactMap(powerState(for:))
-        guard !lightAccessories.isEmpty, states.count == lightAccessories.count else { return nil }
+        let lights = lightAccessories
+        guard !lights.isEmpty, lights.allSatisfy(\.isReachable) else { return nil }
+        let states = lights.compactMap(powerState(for:))
+        guard states.count == lights.count else { return nil }
         return states.allSatisfy { $0 }
     }
 
