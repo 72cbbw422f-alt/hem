@@ -6,7 +6,7 @@ struct DashboardView: View {
     @StateObject private var weatherService = HemmaWeatherService()
 
     private var allRooms: [HMRoom] {
-        homeStore.homes.flatMap { $0.rooms }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        homeStore.homes.flatMap(homeStore.visibleRooms(in:)).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     private var lightsOnCount: Int {
@@ -57,7 +57,7 @@ struct DashboardView: View {
                     .frame(width: 42, height: 42)
                     .background(HEMMATheme.surface, in: Circle())
             }
-            Text("HEMMA")
+            Text("Hemma")
                 .font(.system(size: 38, weight: .bold, design: .rounded))
                 .tracking(-1.1)
                 .foregroundStyle(HEMMATheme.warmWhite)
@@ -128,7 +128,7 @@ struct DashboardView: View {
                     overviewInfoCard(symbol: "thermometer.medium", value: String(format: "%.1f°", reading.celsius), title: "Inomhus", detail: reading.roomName)
                 }
                 if let weather = weatherService.snapshot {
-                    overviewInfoCard(symbol: weather.symbol, value: String(format: "%.0f°", weather.temperature), title: weather.description, detail: "Hudiksvall · SMHI")
+                    overviewInfoCard(symbol: weather.symbol, value: String(format: "%.0f°", weather.temperature), title: weather.description, detail: "Hudiksvall · SMHI · vind \(Int(weather.windSpeed.rounded())) m/s")
                 } else if weatherService.isLoading {
                     overviewInfoCard(symbol: "cloud.sun", value: "—", title: "Väder", detail: "Hämtar SMHI")
                 } else {
