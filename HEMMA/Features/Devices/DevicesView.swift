@@ -179,7 +179,7 @@ struct DevicesView: View {
                         Text(!accessory.isReachable ? "Kan inte nås" : (isLight ? (state == true ? "Tänd" : state == false ? "Släckt" : "Status okänd") : "Tillgänglig"))
                             .font(.caption.weight(.medium))
                             .foregroundStyle(!accessory.isReachable ? Color.red : (state == true && isLight ? Color.green : state == false && isLight ? Color.red : HEMMATheme.secondaryText))
-                        if isLight, let brightness = store.brightness(for: accessory) {
+                        if isLight, state == true, let brightness = store.brightness(for: accessory) {
                             Spacer(minLength: 4)
                             Text("\(Int(brightness.rounded()))%")
                                 .font(.caption.weight(.semibold).monospacedDigit())
