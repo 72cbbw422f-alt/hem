@@ -29,7 +29,7 @@ struct DashboardView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
-                .padding(.bottom, 34)
+                .padding(.bottom, 112)
                 .frame(maxWidth: 760)
                 .frame(maxWidth: .infinity)
             }
