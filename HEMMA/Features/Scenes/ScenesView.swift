@@ -197,16 +197,19 @@ struct ScenesView: View {
     }
 
     private func automationDescription(for trigger: HMTrigger) -> String {
-        let typeName = String(describing: type(of: trigger))
-        if typeName.contains("Event") { return "Händelsebaserad automatisering" }
-        if typeName.contains("Timer") || typeName.contains("Calendar") { return "Tidsstyrd automatisering" }
-        return "Apple Hem-automatisering"
+        if let timer = trigger as? HMTimerTrigger {
+            let time = timer.fireDate.formatted(date: .omitted, time: .shortened)
+            return "Tidsstyrd · Nästa angivna tid \(time)"
+        }
+        if trigger is HMEventTrigger {
+            return "Utlöses av en händelse eller ett villkor"
+        }
+        return "Automatisering i Apple Hem"
     }
 
     private func automationSymbol(for trigger: HMTrigger) -> String {
-        let typeName = String(describing: type(of: trigger))
-        if typeName.contains("Event") { return "sensor.fill" }
-        if typeName.contains("Timer") || typeName.contains("Calendar") { return "clock.fill" }
+        if trigger is HMTimerTrigger { return "clock.fill" }
+        if trigger is HMEventTrigger { return "sensor.fill" }
         return "gearshape.2.fill"
     }
 
