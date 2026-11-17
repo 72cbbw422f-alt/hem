@@ -34,7 +34,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         refreshHomes(manager)
     }
 
-    func accessory(_ accessory: HMAccessory, didUpdateValueFor characteristic: HMCharacteristic) {
+    func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
         revision += 1
     }
 
