@@ -11,6 +11,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var revision = 0
     @Published private(set) var pendingPowerAccessoryIDs: Set<UUID> = []
     @Published private(set) var pendingSceneIDs: Set<UUID> = []
+    @Published private(set) var pendingTriggerIDs: Set<UUID> = []
     @Published private(set) var pendingCharacteristicIDs: Set<String> = []
     @Published private(set) var favoriteRoomIDs: Set<String> = UserDefaults.standard.stringArray(forKey: "hemma.favoriteRoomIDs").map(Set.init) ?? []
 
@@ -68,6 +69,40 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     func isScenePending(_ actionSet: HMActionSet) -> Bool {
         pendingSceneIDs.contains(actionSet.uniqueIdentifier)
+    }
+
+    var automations: [(home: HMHome, trigger: HMTrigger)] {
+        homes.flatMap { home in
+            home.triggers.map { (home: home, trigger: $0) }
+        }
+        .sorted { $0.trigger.name.localizedCaseInsensitiveCompare($1.trigger.name) == .orderedAscending }
+    }
+
+    func isTriggerPending(_ trigger: HMTrigger) -> Bool {
+        pendingTriggerIDs.contains(trigger.uniqueIdentifier)
+    }
+
+    func setTriggerEnabled(_ enabled: Bool, trigger: HMTrigger) {
+        let id = trigger.uniqueIdentifier
+        guard !pendingTriggerIDs.contains(id), trigger.isEnabled != enabled else { return }
+        pendingTriggerIDs.insert(id)
+        errorMessage = nil
+        revision += 1
+
+        let completion: (Error?) -> Void = { [weak self] error in
+            Task { @MainActor in
+                self?.pendingTriggerIDs.remove(id)
+                if let error {
+                    self?.errorMessage = "Kunde inte \(enabled ? "aktivera" : "inaktivera") automatiseringen \(trigger.name): \(error.localizedDescription)"
+                }
+                self?.revision += 1
+            }
+        }
+        if enabled {
+            trigger.enable(completionHandler: completion)
+        } else {
+            trigger.disable(completionHandler: completion)
+        }
     }
 
     func activate(_ actionSet: HMActionSet, in home: HMHome) {
