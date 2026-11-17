@@ -218,7 +218,7 @@ struct DashboardView: View {
             if !homeStore.favoriteRooms.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(homeStore.favoriteRooms, id: \\HMRoom.uniqueIdentifier) { room in
+                        ForEach(homeStore.favoriteRooms, id: \HMRoom.uniqueIdentifier) { room in
                             roomTile(room)
                         }
                     }
