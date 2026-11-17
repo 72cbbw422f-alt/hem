@@ -90,6 +90,64 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         characteristic(for: accessory, type: HMCharacteristicTypeBrightness)
     }
 
+    func colorTemperatureCharacteristic(for accessory: HMAccessory) -> HMCharacteristic? {
+        characteristic(for: accessory, type: HMCharacteristicTypeColorTemperature)
+    }
+
+    func hueCharacteristic(for accessory: HMAccessory) -> HMCharacteristic? {
+        characteristic(for: accessory, type: HMCharacteristicTypeHue)
+    }
+
+    func saturationCharacteristic(for accessory: HMAccessory) -> HMCharacteristic? {
+        characteristic(for: accessory, type: HMCharacteristicTypeSaturation)
+    }
+
+    func colorTemperatureKelvin(for accessory: HMAccessory) -> Double? {
+        guard let value = colorTemperatureCharacteristic(for: accessory)?.value as? NSNumber else { return nil }
+        let mireds = value.doubleValue
+        guard mireds > 0 else { return nil }
+        return 1_000_000 / mireds
+    }
+
+    func hue(for accessory: HMAccessory) -> Double? {
+        (hueCharacteristic(for: accessory)?.value as? NSNumber)?.doubleValue
+    }
+
+    func saturation(for accessory: HMAccessory) -> Double? {
+        (saturationCharacteristic(for: accessory)?.value as? NSNumber)?.doubleValue
+    }
+
+    func setColorTemperature(kelvin: Double, for accessory: HMAccessory) {
+        let mireds = Int((1_000_000 / min(max(kelvin, 2000), 6500)).rounded())
+        write(NSNumber(value: mireds), to: colorTemperatureCharacteristic(for: accessory), accessory: accessory, feature: "färgtemperatur")
+    }
+
+    func setHue(_ value: Double, for accessory: HMAccessory) {
+        write(NSNumber(value: min(max(value, 0), 360)), to: hueCharacteristic(for: accessory), accessory: accessory, feature: "färg")
+    }
+
+    func setSaturation(_ value: Double, for accessory: HMAccessory) {
+        write(NSNumber(value: min(max(value, 0), 100)), to: saturationCharacteristic(for: accessory), accessory: accessory, feature: "färgmättnad")
+    }
+
+    private func write(_ value: NSNumber, to characteristic: HMCharacteristic?, accessory: HMAccessory, feature: String) {
+        guard accessory.isReachable, let characteristic else {
+            errorMessage = "\(accessory.name) saknar stöd för \(feature) eller kan inte nås."
+            revision += 1
+            return
+        }
+        characteristic.writeValue(value) { [weak self] error in
+            Task { @MainActor in
+                if let error {
+                    self?.errorMessage = "Kunde inte ändra \(feature) på \(accessory.name): \(error.localizedDescription)"
+                } else {
+                    self?.errorMessage = nil
+                }
+                self?.revision += 1
+            }
+        }
+    }
+
     func powerState(for accessory: HMAccessory) -> Bool? {
         guard let value = powerCharacteristic(for: accessory)?.value else { return nil }
         return value as? Bool
