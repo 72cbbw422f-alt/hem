@@ -124,7 +124,7 @@ struct DevicesView: View {
         let isLight = store.isLight(accessory)
         let state = store.powerState(for: accessory)
         let isPending = store.isPowerCommandPending(for: accessory)
-        let accessibilityState = state == true ? "tänd" : "släckt"
+        let accessibilityState = state == true ? "tänd" : state == false ? "släckt" : "okänd status"
 
         return Button {
             guard isLight, accessory.isReachable, state != nil, !isPending else { return }
@@ -194,7 +194,7 @@ struct DevicesView: View {
         .buttonStyle(.plain)
         .disabled(!isLight || !accessory.isReachable || state == nil || isPending)
         .accessibilityLabel("\(accessory.name), \(accessibilityState). Tryck för att växla.")
-        .accessibilityHint("Tryck på hela enhetskortet för att tända eller släcka lampan.")
+        .accessibilityHint(isLight ? "Tryck på hela enhetskortet för att tända eller släcka lampan." : "Det här tillbehöret visas som information i HEMMA.")
     }
 
     private func info(_ title: String, detail: String) -> some View {
