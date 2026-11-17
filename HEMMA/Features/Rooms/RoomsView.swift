@@ -171,9 +171,13 @@ private struct LightControlCard: View {
                         .foregroundStyle(accessory.isReachable ? HEMMATheme.secondaryText : .red)
                 }
                 Spacer()
-                if let state = store.powerState(for: accessory) {
+                if !accessory.isReachable {
+                    Text("Ej nåbar")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                } else if store.powerState(for: accessory) != nil {
                     Toggle("Lampa", isOn: Binding(
-                        get: { store.powerState(for: accessory) ?? state },
+                        get: { store.powerState(for: accessory) ?? false },
                         set: { store.setPower($0, for: accessory) }
                     ))
                     .labelsHidden()
