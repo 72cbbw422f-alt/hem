@@ -3,7 +3,6 @@ import HomeKit
 
 struct DashboardView: View {
     @EnvironmentObject private var homeStore: HomeKitStore
-    @StateObject private var weatherService = HemmaWeatherService()
 
     private var allRooms: [HMRoom] {
         homeStore.homes.flatMap(homeStore.visibleRooms(in:)).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -37,16 +36,6 @@ struct DashboardView: View {
             }
             .background(HEMMATheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .task {
-                while !Task.isCancelled {
-                    await weatherService.refresh()
-                    do {
-                        try await Task.sleep(for: .seconds(900))
-                    } catch {
-                        break
-                    }
-                }
-            }
         }
         .background(HEMMATheme.background.ignoresSafeArea())
     }
@@ -132,19 +121,20 @@ struct DashboardView: View {
 
     private var homeOverview: some View {
         VStack(spacing: 11) {
-            HStack(spacing: 11) {
-                if let reading = homeStore.temperatureReadings.first {
-                    overviewInfoCard(symbol: "thermometer.medium", value: String(format: "%.1f°", reading.celsius), title: "Inomhus", detail: reading.roomName)
-                }
-                if let weather = weatherService.snapshot {
-                    overviewInfoCard(symbol: weather.symbol, value: String(format: "%.0f°", weather.temperature), title: weather.description, detail: "Hudiksvall · SMHI · vind \(Int(weather.windSpeed.rounded())) m/s")
-                } else if weatherService.isLoading {
-                    overviewInfoCard(symbol: "cloud.sun", value: "—", title: "Väder", detail: "Hämtar SMHI")
-                } else {
-                    overviewInfoCard(symbol: "cloud", value: "—", title: "Väder", detail: "Hudiksvall")
-                }
+            if let reading = homeStore.temperatureReadings.first {
+                overviewInfoCard(
+                    symbol: "thermometer.medium",
+                    value: String(format: "%.1f°", reading.celsius),
+                    title: "Inomhus",
+                    detail: reading.roomName
+                )
             }
-            overviewInfoCard(symbol: "appletv", value: homeStore.homeHubStatus, title: "Hemhubb", detail: homeStore.homeHubName)
+            overviewInfoCard(
+                symbol: "appletv",
+                value: homeStore.homeHubStatus,
+                title: "Hemhubb",
+                detail: homeStore.homeHubName
+            )
         }
     }
 
