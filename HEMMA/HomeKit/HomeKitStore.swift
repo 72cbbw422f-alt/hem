@@ -11,6 +11,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var revision = 0
     @Published private(set) var pendingPowerAccessoryIDs: Set<UUID> = []
     @Published private(set) var pendingSceneIDs: Set<UUID> = []
+    @Published private(set) var pendingCharacteristicIDs: Set<String> = []
     @Published private(set) var favoriteRoomIDs: Set<String> = UserDefaults.standard.stringArray(forKey: "hemma.favoriteRoomIDs").map(Set.init) ?? []
 
     private let manager = HMHomeManager()
@@ -203,8 +204,13 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             revision += 1
             return
         }
+        let commandID = "\(accessory.uniqueIdentifier.uuidString):\(characteristic.characteristicType)"
+        guard !pendingCharacteristicIDs.contains(commandID) else { return }
+        pendingCharacteristicIDs.insert(commandID)
+        revision += 1
         characteristic.writeValue(value) { [weak self] error in
             Task { @MainActor in
+                self?.pendingCharacteristicIDs.remove(commandID)
                 if let error {
                     self?.errorMessage = "Kunde inte ändra \(feature) på \(accessory.name): \(error.localizedDescription)"
                 } else {
@@ -279,16 +285,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             revision += 1
             return
         }
-        characteristic.writeValue(NSNumber(value: Int(value.rounded()))) { [weak self] error in
-            Task { @MainActor in
-                if let error {
-                    self?.errorMessage = "Kunde inte dimra \(accessory.name): \(error.localizedDescription)"
-                } else {
-                    self?.errorMessage = nil
-                }
-                self?.revision += 1
-            }
-        }
+        write(NSNumber(value: Int(min(max(value, 0), 100).rounded())), to: characteristic, accessory: accessory, feature: "ljusstyrka")
     }
 
     private func characteristic(for accessory: HMAccessory, type: String) -> HMCharacteristic? {
