@@ -44,6 +44,14 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 - Favorite rooms, persisted locally and surfaced on the dashboard.
 - Widget with room buttons and a prominent all-lights action, once entitlement and widget execution are validated.
 
+## Widget proof of concept (implemented)
+- The first WidgetKit extension is in `HEMMAWidget/HEMMAWidget.swift` and supports small and medium system widgets.
+- The widget is intentionally a deep link, not a false direct-control surface: it opens `hemma://lights/toggle` and clearly labels the action as opening HEMMA.
+- `RootView` receives that URL, waits for HomeKit initialization and authorization, then invokes the existing `HomeKitStore.setAllLights` command path. HomeKit errors remain visible in the app.
+- The widget extension is embedded into the main app by XcodeGen. CI now verifies that `HEMMAWidget.appex` is present in the built app and has the WidgetKit extension point before packaging.
+- This is a functional first step, but not yet a verified on-device widget. Confirm installation, widget gallery visibility, deep-link delivery, HomeKit authorization and actual light response on a physical iPhone after signing the IPA.
+- The first iteration opens the app by design. Direct interactive App Intents and room-specific widget controls remain deferred until the complete signed-device flow is validated.
+
 ## Explicitly deferred
 - Matter commissioning / pairing.
 - Cameras and live video.
