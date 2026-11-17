@@ -132,7 +132,7 @@ private struct LightControlCard: View {
                 Spacer()
                 if let state = store.powerState(for: accessory) {
                     Toggle("Lampa", isOn: Binding(
-                        get: { state },
+                        get: { store.powerState(for: accessory) ?? state },
                         set: { store.setPower($0, for: accessory) }
                     ))
                     .labelsHidden()
