@@ -70,7 +70,12 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         }
     }
 
-    func refresh() {\n        isLoading = true\n        manager.reload()\n    }\n\n    var roomCount: Int {
+    func refresh() {
+        isLoading = true
+        manager.reload()
+    }
+
+    var roomCount: Int {
         homes.reduce(0) { $0 + $1.rooms.count }
     }
 
