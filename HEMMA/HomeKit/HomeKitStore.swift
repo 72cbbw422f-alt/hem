@@ -10,6 +10,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var errorMessage: String?
     @Published private(set) var revision = 0
     @Published private(set) var pendingPowerAccessoryIDs: Set<UUID> = []
+    @Published private(set) var favoriteRoomIDs: Set<String> = UserDefaults.standard.stringArray(forKey: "hemma.favoriteRoomIDs").map(Set.init) ?? []
 
     private let manager = HMHomeManager()
 
@@ -82,6 +83,25 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         isLoading = false
         errorMessage = nil
         revision += 1
+    }
+
+    func isFavorite(_ room: HMRoom) -> Bool {
+        favoriteRoomIDs.contains(room.uniqueIdentifier.uuidString)
+    }
+
+    func toggleFavorite(_ room: HMRoom) {
+        let id = room.uniqueIdentifier.uuidString
+        if favoriteRoomIDs.contains(id) {
+            favoriteRoomIDs.remove(id)
+        } else {
+            favoriteRoomIDs.insert(id)
+        }
+        UserDefaults.standard.set(Array(favoriteRoomIDs), forKey: "hemma.favoriteRoomIDs")
+        revision += 1
+    }
+
+    var favoriteRooms: [HMRoom] {
+        homes.flatMap(\\.rooms).filter(isFavorite)
     }
 
     var roomCount: Int {
