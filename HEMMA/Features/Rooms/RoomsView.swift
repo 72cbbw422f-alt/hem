@@ -469,8 +469,9 @@ private struct CircularBrightnessPanel: View {
                 let dy = value.location.y - 116
                 var angle = atan2(dy, dx) * 180 / .pi + 90
                 if angle < 0 { angle += 360 }
-                let clockwise = angle >= 135 ? angle - 135 : angle + 225
-                brightness = min(max(clockwise / 270 * 100, 0), 100)
+                let clockwiseDegrees = Double(angle >= 135 ? angle - 135 : angle + 225)
+                let percentage = clockwiseDegrees / 270.0 * 100.0
+                brightness = min(max(percentage, 0.0), 100.0)
             }
             .onEnded { _ in
                 isDragging = false
