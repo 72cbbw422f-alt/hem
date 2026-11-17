@@ -105,7 +105,7 @@ private struct RoomDetailView: View {
             .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 16))
         }
         .buttonStyle(.plain)
-        .disabled(lights.allSatisfy { !$0.isReachable } || lights.allSatisfy { store.isPowerCommandPending(for: $0) })
+        .disabled(!lights.contains(where: \.isReachable) || lights.contains(where: store.isPowerCommandPending(for:)))
     }
 
     var body: some View {
