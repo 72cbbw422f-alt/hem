@@ -156,6 +156,10 @@ private struct LightControlCard: View {
     @State private var temperatureValue: Double = 2700
     @State private var hueValue: Double = 0
     @State private var saturationValue: Double = 100
+    @State private var editingBrightness = false
+    @State private var editingTemperature = false
+    @State private var editingHue = false
+    @State private var editingSaturation = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 17) {
@@ -191,23 +195,23 @@ private struct LightControlCard: View {
             }
 
             if store.brightnessCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Ljusstyrka", type: HMCharacteristicTypeBrightness, value: $brightnessValue, range: 0...100, suffix: "%") { value in
+                controlSlider(title: "Ljusstyrka", type: HMCharacteristicTypeBrightness, value: $brightnessValue, isEditing: $editingBrightness, range: 0...100, suffix: "%") { value in
                     store.setBrightness(value, for: accessory)
                 }
             }
 
             if store.colorTemperatureCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgtemperatur", type: HMCharacteristicTypeColorTemperature, value: $temperatureValue, range: 2000...6500, suffix: " K") { value in
+                controlSlider(title: "Färgtemperatur", type: HMCharacteristicTypeColorTemperature, value: $temperatureValue, isEditing: $editingTemperature, range: 2000...6500, suffix: " K") { value in
                     store.setColorTemperature(kelvin: value, for: accessory)
                 }
             }
 
             if store.hueCharacteristic(for: accessory) != nil,
                store.saturationCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgton", type: HMCharacteristicTypeHue, value: $hueValue, range: 0...360, suffix: "°") { value in
+                controlSlider(title: "Färgton", type: HMCharacteristicTypeHue, value: $hueValue, isEditing: $editingHue, range: 0...360, suffix: "°") { value in
                     store.setHue(value, for: accessory)
                 }
-                controlSlider(title: "Färgmättnad", type: HMCharacteristicTypeSaturation, value: $saturationValue, range: 0...100, suffix: "%") { value in
+                controlSlider(title: "Färgmättnad", type: HMCharacteristicTypeSaturation, value: $saturationValue, isEditing: $editingSaturation, range: 0...100, suffix: "%") { value in
                     store.setSaturation(value, for: accessory)
                 }
             }
@@ -222,6 +226,7 @@ private struct LightControlCard: View {
         title: String,
         type: String,
         value: Binding<Double>,
+        isEditing: Binding<Bool>,
         range: ClosedRange<Double>,
         suffix: String,
         onCommit: @escaping (Double) -> Void
@@ -237,6 +242,7 @@ private struct LightControlCard: View {
                     .foregroundStyle(HEMMATheme.warmWhite)
             }
             Slider(value: value, in: range) { editing in
+                isEditing.wrappedValue = editing
                 if !editing { onCommit(value.wrappedValue) }
             }
             .tint(HEMMATheme.amber)
@@ -245,9 +251,17 @@ private struct LightControlCard: View {
     }
 
     private func syncValues() {
-        brightnessValue = store.brightness(for: accessory) ?? brightnessValue
-        temperatureValue = store.colorTemperatureKelvin(for: accessory) ?? temperatureValue
-        hueValue = store.hue(for: accessory) ?? hueValue
-        saturationValue = store.saturation(for: accessory) ?? saturationValue
+        if !editingBrightness && !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness) {
+            brightnessValue = store.brightness(for: accessory) ?? brightnessValue
+        }
+        if !editingTemperature && !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeColorTemperature) {
+            temperatureValue = store.colorTemperatureKelvin(for: accessory) ?? temperatureValue
+        }
+        if !editingHue && !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeHue) {
+            hueValue = store.hue(for: accessory) ?? hueValue
+        }
+        if !editingSaturation && !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeSaturation) {
+            saturationValue = store.saturation(for: accessory) ?? saturationValue
+        }
     }
 }
