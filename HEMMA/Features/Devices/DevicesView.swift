@@ -3,6 +3,8 @@ import HomeKit
 
 struct DevicesView: View {
     @EnvironmentObject private var store: HomeKitStore
+    @State private var selectedLight: HMAccessory?
+    @State private var longPressRecognized = false
 
     private var accessories: [HMAccessory] {
         store.homes.flatMap { $0.accessories }.sorted {
@@ -71,6 +73,20 @@ struct DevicesView: View {
             .toolbar(.hidden, for: .navigationBar)
         }
         .background(HEMMATheme.background.ignoresSafeArea())
+        .sheet(isPresented: Binding(
+            get: { selectedLight != nil },
+            set: { if !$0 { selectedLight = nil } }
+        )) {
+            if let selectedLight {
+                LightControlCard(accessory: selectedLight, store: store)
+                    .padding(20)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(HEMMATheme.background.ignoresSafeArea())
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+                    .presentationCornerRadius(28)
+            }
+        }
     }
 
     private var header: some View {
@@ -92,6 +108,9 @@ struct DevicesView: View {
                 .font(.subheadline)
                 .foregroundStyle(HEMMATheme.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
+            Label("Tryck för att tända · Håll inne för att dimra", systemImage: "hand.tap")
+                .font(.caption)
+                .foregroundStyle(HEMMATheme.amber.opacity(0.9))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
@@ -127,6 +146,10 @@ struct DevicesView: View {
         let accessibilityState = state == true ? "tänd" : state == false ? "släckt" : "okänd status"
 
         return Button {
+            if longPressRecognized {
+                longPressRecognized = false
+                return
+            }
             guard isLight, accessory.isReachable, state != nil, !isPending else { return }
             store.setPower(state != true, for: accessory)
         } label: {
@@ -192,6 +215,15 @@ struct DevicesView: View {
             .contentShape(RoundedRectangle(cornerRadius: 22))
         }
         .buttonStyle(.plain)
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.45)
+                .onEnded { _ in
+                    guard isLight, accessory.isReachable,
+                          store.brightnessCharacteristic(for: accessory) != nil else { return }
+                    longPressRecognized = true
+                    selectedLight = accessory
+                }
+        )
         .disabled(!isLight || !accessory.isReachable || state == nil || isPending)
         .accessibilityLabel("\(accessory.name), \(accessibilityState). Tryck för att växla.")
         .accessibilityHint(isLight ? "Tryck på hela enhetskortet för att tända eller släcka lampan." : "Det här tillbehöret visas som information i HEMMA.")
