@@ -67,10 +67,10 @@ private struct HEMMALightingWidgetView: View {
                         .frame(width: 44, height: 44)
                         .background(LinearGradient(colors: [HEMMAWidgetStyle.amber, Color(red: 0.82, green: 0.43, blue: 0.18)], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 14))
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Styr belysningen")
+                        Text("Ditt hem, ett tryck bort")
                             .font(.headline)
                             .foregroundStyle(.white)
-                        Text("Öppna HEMMA")
+                        Text("Öppna ljuskontrollen")
                             .font(.caption)
                             .foregroundStyle(HEMMAWidgetStyle.secondary)
                     }
@@ -83,7 +83,7 @@ private struct HEMMALightingWidgetView: View {
             .buttonStyle(.plain)
 
             if family == .systemMedium {
-                Text("Tryck för att öppna och styra alla lampor")
+                Text("Snabb åtkomst till hemmets belysning")
                     .font(.caption2)
                     .foregroundStyle(HEMMAWidgetStyle.secondary)
                     .lineLimit(1)
