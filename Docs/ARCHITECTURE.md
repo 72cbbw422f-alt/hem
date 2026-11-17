@@ -53,6 +53,7 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 - Apple Watch app.
 
 ## Widget implementation constraints (checked against Apple App Intents and WidgetKit documentation, November 2026)
+- CI baseline verified from build logs: Xcode 16.4, iOS 18.5 SDK, deployment target iOS 17.0. The current CI SDK predates the newer `supportedModes` runtime API documented in Apple's 2026 App Intents updates. Do not add code using that API until the CI toolchain is upgraded and verified; use the deployment-compatible behavior available in the selected SDK for the proof of concept.
 - Interactive widget buttons and toggles invoke App Intents. The intent's asynchronous `perform()` must finish the action and persist any data needed by the next timeline before returning. WidgetKit guarantees a timeline reload after a button or toggle interaction.
 - Widget extension code runs in a separate process. App Intent code in the main app bundle can run in the app process; code in an App Intents extension or Widget extension always runs in the background. `supportedModes` expresses preferred runtime modes but is not a guarantee and cannot override extension runtime restrictions.
 - Apple documents `allowedExecutionTargets = .main` for intents whose writes must execute in the main app process. Intent packaging and target membership must follow Apple's guidance; do not assume the widget can call the main app's in-memory `HomeKitStore`.
