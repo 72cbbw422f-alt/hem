@@ -2,7 +2,7 @@ import SwiftUI
 import HomeKit
 
 struct ScenesView: View {
-    @StateObject private var store = HomeKitStore()
+    @EnvironmentObject private var store: HomeKitStore
 
     var body: some View {
         NavigationStack {
