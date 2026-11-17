@@ -108,7 +108,16 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func setLights(in room: HMRoom, isOn: Bool) {
-        room.accessories.filter(isLight).forEach { setPower(isOn, for: $0) }
+        let availableLights = room.accessories
+            .filter(isLight)
+            .filter(\.isReachable)
+            .filter { !isPowerCommandPending(for: $0) }
+        guard !availableLights.isEmpty else {
+            errorMessage = "Inga tillgängliga lampor kan styras i det här rummet just nu."
+            revision += 1
+            return
+        }
+        availableLights.forEach { setPower(isOn, for: $0) }
     }
 
     var favoriteRooms: [HMRoom] {
