@@ -5,7 +5,7 @@ struct DevicesView: View {
     @EnvironmentObject private var store: HomeKitStore
 
     private var accessories: [HMAccessory] {
-        store.homes.flatMap(\\.accessories).sorted {
+        store.homes.flatMap(\.accessories).sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
     }
@@ -28,8 +28,8 @@ struct DevicesView: View {
                         info("Inga enheter hittades", detail: "När Apple Hem har tillbehör visas de här.")
                     } else {
                         HStack(spacing: 10) {
-                            metric(value: "\\(accessories.count)", label: "Enheter", symbol: "square.3.layers.3d")
-                            metric(value: "\\(availableLights)", label: "Tillgängliga lampor", symbol: "lightbulb.fill")
+                            metric(value: "\(accessories.count)", label: "Enheter", symbol: "square.3.layers.3d")
+                            metric(value: "\(availableLights)", label: "Tillgängliga lampor", symbol: "lightbulb.fill")
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -38,7 +38,7 @@ struct DevicesView: View {
                                     .font(.title2.weight(.bold))
                                     .foregroundStyle(HEMMATheme.warmWhite)
                                 Spacer()
-                                Text("\\(accessories.count)")
+                                Text("\(accessories.count)")
                                     .font(.caption.weight(.semibold).monospacedDigit())
                                     .foregroundStyle(HEMMATheme.secondaryText)
                                     .padding(.horizontal, 10)
@@ -46,7 +46,7 @@ struct DevicesView: View {
                                     .background(HEMMATheme.elevatedSurface, in: Capsule())
                             }
 
-                            ForEach(accessories, id: \\.uniqueIdentifier) { accessory in
+                            ForEach(accessories, id: \.uniqueIdentifier) { accessory in
                                 deviceCard(accessory)
                             }
                         }
@@ -192,7 +192,7 @@ struct DevicesView: View {
         }
         .buttonStyle(.plain)
         .disabled(!isLight || !accessory.isReachable || state == nil || isPending)
-        .accessibilityLabel("\\(accessory.name), \\(state == true ? "tänd" : "släckt"). Tryck för att växla.")
+        .accessibilityLabel("\(accessory.name), \(state == true ? "tänd" : "släckt"). Tryck för att växla.")
         .accessibilityHint("Tryck på hela enhetskortet för att tända eller släcka lampan.")
     }
 
