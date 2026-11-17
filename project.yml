@@ -26,3 +26,26 @@ targets:
         INFOPLIST_KEY_NSHomeKitUsageDescription: "HEMMA behöver åtkomst till ditt hem för att visa och styra dina kompatibla tillbehör."
         CODE_SIGN_ENTITLEMENTS: HEMMA/HEMMA.entitlements
         SWIFT_VERSION: "5.0"
+        INFOPLIST_KEY_CFBundleURLTypes:
+          - CFBundleURLName: se.hemma.app
+            CFBundleURLSchemes:
+              - hemma
+  HEMMAWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: HEMMAWidget
+    dependencies:
+      - target: HEMMA
+        embed: true
+    info:
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.hemma.app.widget
+        PRODUCT_NAME: HEMMAWidget
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
