@@ -101,7 +101,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     var favoriteRooms: [HMRoom] {
-        homes.flatMap(\\.rooms).filter(isFavorite)
+        homes.flatMap(\.rooms).filter(isFavorite)
     }
 
     var roomCount: Int {
