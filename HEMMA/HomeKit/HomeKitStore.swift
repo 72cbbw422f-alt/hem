@@ -186,6 +186,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         .sorted { $0.roomName.localizedCaseInsensitiveCompare($1.roomName) == .orderedAscending }
     }
 
+    var homeHubName: String {
+        homes.flatMap(\.accessories).first(where: isHomeHubAccessory)?.name ?? "Apple TV"
+    }
+
     var homeHubStatus: String {
         guard let home = homes.first else { return "Inväntar hem" }
         switch home.homeHubState {
