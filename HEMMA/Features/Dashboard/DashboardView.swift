@@ -43,7 +43,7 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: 7) {
             HStack(spacing: 7) {
                 Circle().fill(HEMMATheme.amber).frame(width: 6, height: 6)
-                Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)).uppercased())
+                Text(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide).locale(Locale(identifier: "sv_SE"))).uppercased())
                     .font(.caption.weight(.bold))
                     .tracking(1.8)
                     .foregroundStyle(HEMMATheme.secondaryText)
