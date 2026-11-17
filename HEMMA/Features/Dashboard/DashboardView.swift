@@ -5,7 +5,7 @@ struct DashboardView: View {
     @EnvironmentObject private var homeStore: HomeKitStore
 
     private var allRooms: [HMRoom] {
-        homeStore.homes.flatMap(\.rooms).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        homeStore.homes.flatMap { $0.rooms }.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     private var lightsOnCount: Int {
@@ -209,7 +209,7 @@ struct DashboardView: View {
             }
         }
         .buttonStyle(.plain)
-        .disabled(!homeStore.isAuthorized || !homeStore.lightAccessories.contains(where: \.isReachable) || !homeStore.pendingPowerAccessoryIDs.isEmpty)
+        .disabled(!homeStore.isAuthorized || !homeStore.lightAccessories.contains { $0.isReachable } || !homeStore.pendingPowerAccessoryIDs.isEmpty)
     }
 
     private var roomsSection: some View {
@@ -218,7 +218,7 @@ struct DashboardView: View {
             if !homeStore.favoriteRooms.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(homeStore.favoriteRooms, id: \.uniqueIdentifier) { room in
+                        ForEach(homeStore.favoriteRooms, id: \\HMRoom.uniqueIdentifier) { room in
                             roomTile(room)
                         }
                     }
@@ -299,7 +299,7 @@ struct DashboardView: View {
                 .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 20))
             } else {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(scenes, id: \.actionSet.uniqueIdentifier) { item in
+                    ForEach(Array(scenes.enumerated()), id: \.offset) { _, item in
                         Button {
                             homeStore.activate(item.actionSet, in: item.home)
                         } label: {
