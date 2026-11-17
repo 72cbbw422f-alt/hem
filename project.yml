@@ -16,6 +16,12 @@ targets:
       - path: HEMMA
     info:
       path: HEMMA/Resources/Info.plist
+      properties:
+        NSHomeKitUsageDescription: "HEMMA behöver åtkomst till ditt hem för att visa och styra dina kompatibla tillbehör."
+        CFBundleURLTypes:
+          - CFBundleURLName: se.hemma.app
+            CFBundleURLSchemes:
+              - hemma
     entitlements:
       path: HEMMA/HEMMA.entitlements
     settings:
@@ -23,21 +29,16 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: se.hemma.app
         PRODUCT_NAME: HEMMA
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_NSHomeKitUsageDescription: "HEMMA behöver åtkomst till ditt hem för att visa och styra dina kompatibla tillbehör."
         CODE_SIGN_ENTITLEMENTS: HEMMA/HEMMA.entitlements
         SWIFT_VERSION: "5.0"
-        INFOPLIST_KEY_CFBundleURLTypes:
-          - CFBundleURLName: se.hemma.app
-            CFBundleURLSchemes:
-              - hemma
+    dependencies:
+      - target: HEMMAWidget
+        embed: true
   HEMMAWidget:
     type: app-extension
     platform: iOS
     sources:
       - path: HEMMAWidget
-    dependencies:
-      - target: HEMMA
-        embed: true
     info:
       properties:
         NSExtension:
