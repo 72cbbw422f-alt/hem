@@ -131,16 +131,23 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func setLights(in room: HMRoom, isOn: Bool) {
-        let availableLights = room.accessories
-            .filter(isLight)
-            .filter(\.isReachable)
-            .filter { !isPowerCommandPending(for: $0) }
+        let roomLights = room.accessories.filter(isLight)
+        let availableLights = roomLights.filter {
+            $0.isReachable &&
+            !isPowerCommandPending(for: $0) &&
+            powerCharacteristic(for: $0) != nil
+        }
         guard !availableLights.isEmpty else {
             errorMessage = "Inga tillgängliga lampor kan styras i det här rummet just nu."
             revision += 1
             return
         }
         availableLights.forEach { setPower(isOn, for: $0) }
+        let skippedCount = roomLights.count - availableLights.count
+        if skippedCount > 0 {
+            errorMessage = "\(skippedCount) av \(roomLights.count) lampor kunde inte styras. Kontrollera att de är nåbara och inte redan håller på att ändras."
+            revision += 1
+        }
     }
 
     var favoriteRooms: [HMRoom] {
@@ -252,9 +259,12 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func setAllLights(_ isOn: Bool) {
-        let availableLights = lightAccessories
-            .filter(\.isReachable)
-            .filter { !isPowerCommandPending(for: $0) }
+        let lights = lightAccessories
+        let availableLights = lights.filter {
+            $0.isReachable &&
+            !isPowerCommandPending(for: $0) &&
+            powerCharacteristic(for: $0) != nil
+        }
 
         guard !availableLights.isEmpty else {
             errorMessage = "Inga tillgängliga lampor kan styras just nu."
@@ -263,6 +273,11 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         }
 
         availableLights.forEach { setPower(isOn, for: $0) }
+        let skippedCount = lights.count - availableLights.count
+        if skippedCount > 0 {
+            errorMessage = "\(skippedCount) av \(lights.count) lampor kunde inte styras. Kontrollera att de är nåbara och inte redan håller på att ändras."
+            revision += 1
+        }
     }
 
     func isPowerCommandPending(for accessory: HMAccessory) -> Bool {
