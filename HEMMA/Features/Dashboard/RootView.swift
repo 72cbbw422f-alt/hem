@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct RootView: View {
+    @StateObject private var homeStore = HomeKitStore()
+
     var body: some View {
         TabView {
             DashboardView()
@@ -15,6 +17,7 @@ struct RootView: View {
                 .tabItem { Label("Inställningar", systemImage: "gearshape.fill") }
         }
         .tint(HEMMATheme.amber)
+        .environmentObject(homeStore)
     }
 }
 
