@@ -52,6 +52,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
         pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
+        errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
         revision += 1
     }
 
