@@ -10,6 +10,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var errorMessage: String?
     @Published private(set) var revision = 0
     @Published private(set) var pendingPowerAccessoryIDs: Set<UUID> = []
+    @Published private(set) var pendingSceneIDs: Set<UUID> = []
     @Published private(set) var favoriteRoomIDs: Set<String> = UserDefaults.standard.stringArray(forKey: "hemma.favoriteRoomIDs").map(Set.init) ?? []
 
     private let manager = HMHomeManager()
@@ -60,9 +61,19 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         }
     }
 
+    func isScenePending(_ actionSet: HMActionSet) -> Bool {
+        pendingSceneIDs.contains(actionSet.uniqueIdentifier)
+    }
+
     func activate(_ actionSet: HMActionSet, in home: HMHome) {
+        guard !isScenePending(actionSet) else { return }
+        pendingSceneIDs.insert(actionSet.uniqueIdentifier)
+        errorMessage = nil
+        revision += 1
+
         home.executeActionSet(actionSet) { [weak self] error in
             Task { @MainActor in
+                self?.pendingSceneIDs.remove(actionSet.uniqueIdentifier)
                 if let error {
                     self?.errorMessage = "Kunde inte starta \\(actionSet.name): \\(error.localizedDescription)"
                 } else {
@@ -220,7 +231,17 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func setAllLights(_ isOn: Bool) {
-        lightAccessories.forEach { setPower(isOn, for: $0) }
+        let availableLights = lightAccessories
+            .filter(\\.isReachable)
+            .filter { !isPowerCommandPending(for: $0) }
+
+        guard !availableLights.isEmpty else {
+            errorMessage = "Inga tillgängliga lampor kan styras just nu."
+            revision += 1
+            return
+        }
+
+        availableLights.forEach { setPower(isOn, for: $0) }
     }
 
     func isPowerCommandPending(for accessory: HMAccessory) -> Bool {
