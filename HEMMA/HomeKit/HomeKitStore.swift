@@ -98,11 +98,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.revision += 1
             }
         }
-        if enabled {
-            trigger.enable(completionHandler: completion)
-        } else {
-            trigger.disable(completionHandler: completion)
-        }
+        trigger.enable(enabled, completionHandler: completion)
     }
 
     func activate(_ actionSet: HMActionSet, in home: HMHome) {
