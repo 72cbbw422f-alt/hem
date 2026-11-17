@@ -90,12 +90,20 @@ struct RoomDetailView: View {
 
     private var lights: [HMAccessory] { room.accessories.filter(store.isLight) }
 
+    private var roomLightingTitle: String {
+        switch store.lightsAreOn(in: room) {
+        case .some(true): return "Släck alla lampor i rummet"
+        case .some(false): return "Tänd alla lampor i rummet"
+        case .none: return "Tänd tillgängliga lampor"
+        }
+    }
+
     private var roomLightingButton: some View {
         Button {
             store.setLights(in: room, isOn: store.lightsAreOn(in: room) != true)
         } label: {
             Label(
-                store.lightsAreOn(in: room) == true ? "Släck alla lampor i rummet" : "Tänd alla lampor i rummet",
+                roomLightingTitle,
                 systemImage: store.lightsAreOn(in: room) == true ? "lightbulb.slash.fill" : "lightbulb.2.fill"
             )
             .font(.headline)
