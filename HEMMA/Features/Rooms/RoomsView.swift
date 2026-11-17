@@ -165,6 +165,7 @@ struct RoomsView: View {
 struct RoomDetailView: View {
     let room: HMRoom
     @ObservedObject var store: HomeKitStore
+    @Environment(\.dismiss) private var dismiss
     private var lights: [HMAccessory] { room.accessories.filter(store.isLight) }
 
     private var roomLightingTitle: String {
@@ -178,6 +179,16 @@ struct RoomDetailView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
+                Button {
+                    dismiss()
+                } label: {
+                    Label("Tillbaka", systemImage: "chevron.left")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(HEMMATheme.amber)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
+
                 ZStack(alignment: .bottomLeading) {
                     AsyncImage(url: RoomPhotography.image(for: room.name)) { phase in
                         switch phase {
@@ -267,7 +278,7 @@ struct RoomDetailView: View {
             .padding(.bottom, 30)
         }
         .background(HEMMATheme.background.ignoresSafeArea())
-        .toolbarColorScheme(.dark, for: .navigationBar)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     private var roomSymbol: String {
