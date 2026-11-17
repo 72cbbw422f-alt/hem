@@ -198,6 +198,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         write(NSNumber(value: min(max(value, 0), 100)), to: saturationCharacteristic(for: accessory), accessory: accessory, feature: "färgmättnad")
     }
 
+    func isCharacteristicPending(for accessory: HMAccessory, type: String) -> Bool {
+        pendingCharacteristicIDs.contains("\(accessory.uniqueIdentifier.uuidString):\(type)")
+    }
+
     private func write(_ value: NSNumber, to characteristic: HMCharacteristic?, accessory: HMAccessory, feature: String) {
         guard accessory.isReachable, let characteristic else {
             errorMessage = "\(accessory.name) saknar stöd för \(feature) eller kan inte nås."
