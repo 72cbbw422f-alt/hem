@@ -135,7 +135,7 @@ struct DashboardView: View {
                     overviewInfoCard(symbol: "cloud", value: "—", title: "Väder", detail: "Hudiksvall")
                 }
             }
-            overviewInfoCard(symbol: "appletv", value: homeStore.homeHubStatus, title: "Hemhubb", detail: "Apple TV")
+            overviewInfoCard(symbol: "appletv", value: homeStore.homeHubStatus, title: "Hemhubb", detail: homeStore.homeHubName)
         }
     }
 
