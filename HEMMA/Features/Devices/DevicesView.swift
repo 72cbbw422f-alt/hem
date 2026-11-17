@@ -5,7 +5,7 @@ struct DevicesView: View {
     @EnvironmentObject private var store: HomeKitStore
 
     private var accessories: [HMAccessory] {
-        store.homes.flatMap(\.accessories).sorted {
+        store.homes.flatMap { $0.accessories }.sorted {
             $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
     }
@@ -46,7 +46,7 @@ struct DevicesView: View {
                                     .background(HEMMATheme.elevatedSurface, in: Capsule())
                             }
 
-                            ForEach(accessories, id: \.uniqueIdentifier) { accessory in
+                            ForEach(accessories, id: \HMAccessory.uniqueIdentifier) { accessory in
                                 deviceCard(accessory)
                             }
                         }
@@ -192,9 +192,11 @@ struct DevicesView: View {
         }
         .buttonStyle(.plain)
         .disabled(!isLight || !accessory.isReachable || state == nil || isPending)
-        .accessibilityLabel("\(accessory.name), \(state == true ? "tänd" : "släckt"). Tryck för att växla.")
+        .accessibilityLabel("\(accessory.name), \(accessibilityState). Tryck för att växla.")
         .accessibilityHint("Tryck på hela enhetskortet för att tända eller släcka lampan.")
     }
+
+    private var accessibilityState: String { state == true ? "tänd" : "släckt" }
 
     private func info(_ title: String, detail: String) -> some View {
         VStack(alignment: .leading, spacing: 7) {
