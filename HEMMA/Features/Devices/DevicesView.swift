@@ -2,7 +2,7 @@ import SwiftUI
 import HomeKit
 
 struct DevicesView: View {
-    @StateObject private var store = HomeKitStore()
+    @EnvironmentObject private var store: HomeKitStore
 
     private var accessories: [HMAccessory] {
         store.homes.flatMap(\.accessories).sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
