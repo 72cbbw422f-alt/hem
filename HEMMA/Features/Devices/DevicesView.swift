@@ -174,11 +174,11 @@ struct DevicesView: View {
                         .lineLimit(1)
                     HStack(spacing: 6) {
                         Circle()
-                            .fill(accessory.isReachable ? (state == true && isLight ? HEMMATheme.amber : Color.green) : Color.red)
-                            .frame(width: 6, height: 6)
+                            .fill(!accessory.isReachable ? Color.red : (state == true && isLight ? Color.green : state == false && isLight ? Color.red : HEMMATheme.secondaryText))
+                            .frame(width: 7, height: 7)
                         Text(!accessory.isReachable ? "Kan inte nås" : (isLight ? (state == true ? "Tänd" : state == false ? "Släckt" : "Status okänd") : "Tillgänglig"))
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(HEMMATheme.secondaryText)
+                            .foregroundStyle(!accessory.isReachable ? Color.red : (state == true && isLight ? Color.green : state == false && isLight ? Color.red : HEMMATheme.secondaryText))
                     }
                 }
 
