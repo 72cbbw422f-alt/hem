@@ -4,7 +4,6 @@ import Foundation
 let canvas = 1024
 let image = NSImage(size: NSSize(width: canvas, height: canvas))
 image.lockFocus()
-defer { image.unlockFocus() }
 
 let bounds = NSRect(x: 0, y: 0, width: canvas, height: canvas)
 NSGradient(colors: [
@@ -64,6 +63,7 @@ horizon.lineWidth = 5
 gold.setStroke()
 horizon.stroke()
 
+image.unlockFocus()
 let bitmap = NSBitmapImageRep(data: image.tiffRepresentation!)!
 let png = bitmap.representation(using: .png, properties: [:])!
 let output = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "HEMMA/Assets.xcassets/AppIcon.appiconset/AppIcon.png"
