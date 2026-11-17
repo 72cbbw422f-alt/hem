@@ -21,6 +21,8 @@ struct DevicesView: View {
 
                     if store.isLoading {
                         info("Ansluter till Apple Hem", detail: "Hämtar dina tillbehör.")
+                    } else if !store.isAuthorized {
+                        info("Åtkomst till Apple Hem saknas", detail: "Tillåt HEMMA att komma åt ditt hem i iPhone-inställningarna och försök igen.")
                     } else if accessories.isEmpty {
                         info("Inga enheter hittades", detail: "När Apple Hem har tillbehör visas de här.")
                     } else {
