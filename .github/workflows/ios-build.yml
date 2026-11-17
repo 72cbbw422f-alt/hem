@@ -15,7 +15,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Verify Apple toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate project
