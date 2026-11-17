@@ -13,6 +13,8 @@ struct RoomsView: View {
                         .foregroundStyle(HEMMATheme.warmWhite)
                     if store.isLoading {
                         messageCard("Ansluter till Apple Hem", detail: "Hämtar dina rum.")
+                    } else if !store.isAuthorized {
+                        messageCard("Åtkomst till Apple Hem saknas", detail: "Tillåt HEMMA att komma åt ditt hem i iPhone-inställningarna och försök igen.")
                     } else if store.homes.isEmpty {
                         messageCard("Inga rum hittades", detail: "Kontrollera att ditt hem är konfigurerat i Apples Hem-app.")
                     } else {
