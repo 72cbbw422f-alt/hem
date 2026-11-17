@@ -13,6 +13,9 @@ struct DashboardView: View {
                         summaryCard(title: "Lampor", value: homeStore.isAuthorized ? "\(homeStore.lightAccessories.count)" : "—", symbol: "lightbulb.fill")
                         summaryCard(title: "Rum", value: homeStore.isAuthorized ? "\(homeStore.roomCount)" : "—", symbol: "square.grid.2x2.fill")
                     }
+                    if homeStore.isAuthorized && !homeStore.lightAccessories.isEmpty {
+                        allLightsButton
+                    }
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Ditt hem")
                             .font(.title2.weight(.semibold))
@@ -45,6 +48,36 @@ struct DashboardView: View {
             .background(HEMMATheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
         }
+    }
+
+    private var allLightsButton: some View {
+        Button {
+            homeStore.setAllLights(homeStore.allLightsAreOn != true)
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: homeStore.allLightsAreOn == true ? "lightbulb.slash.fill" : "lightbulb.2.fill")
+                    .font(.title2)
+                    .foregroundStyle(HEMMATheme.amber)
+                    .frame(width: 48, height: 48)
+                    .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 15))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(homeStore.allLightsAreOn == true ? "Släck alla lampor" : "Tänd alla lampor")
+                        .font(.headline)
+                        .foregroundStyle(HEMMATheme.warmWhite)
+                    Text("Styr endast tillbehör som identifierats som lampor")
+                        .font(.caption)
+                        .foregroundStyle(HEMMATheme.secondaryText)
+                }
+                Spacer()
+                Image(systemName: "arrow.right")
+                    .foregroundStyle(HEMMATheme.secondaryText)
+            }
+            .padding(16)
+            .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
+        }
+        .buttonStyle(.plain)
+        .disabled(homeStore.lightAccessories.contains { !$0.isReachable })
+        .opacity(homeStore.lightAccessories.contains { !$0.isReachable } ? 0.55 : 1)
     }
 
     private var header: some View {
