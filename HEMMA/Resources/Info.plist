@@ -8,6 +8,12 @@
     <string>HEMMA behöver åtkomst till ditt hem för att visa och styra dina kompatibla lampor och tillbehör.</string>
     <key>UILaunchScreen</key>
     <dict/>
+    <key>UIRequiresFullScreen</key>
+    <true/>
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+    </array>
     <key>UIUserInterfaceStyle</key>
     <string>Dark</string>
 </dict>
