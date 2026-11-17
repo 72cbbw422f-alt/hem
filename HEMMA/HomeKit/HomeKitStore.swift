@@ -24,7 +24,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
-        errorMessage = nil
+        errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
         revision += 1
     }
 
@@ -47,6 +47,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     private func refreshHomes(_ manager: HMHomeManager) {
         homes = manager.homes
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        isAuthorized = manager.authorizationStatus.contains(.authorized)
         revision += 1
     }
 
@@ -81,7 +82,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
-        errorMessage = nil
+        errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
         revision += 1
     }
 
