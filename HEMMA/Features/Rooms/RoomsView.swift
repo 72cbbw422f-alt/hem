@@ -388,86 +388,9 @@ private struct CircularBrightnessPanel: View {
 
     var body: some View {
         VStack(spacing: 15) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("LJUSSTYRKA")
-                        .font(.caption.weight(.bold))
-                        .tracking(1.4)
-                        .foregroundStyle(HEMMATheme.amber)
-                    Text(accessory.name)
-                        .font(.headline)
-                        .foregroundStyle(HEMMATheme.warmWhite)
-                }
-                Spacer()
-                Image(systemName: "sun.max.fill")
-                    .foregroundStyle(HEMMATheme.amber)
-            }
-
-            ZStack {
-                Circle()
-                    .stroke(HEMMATheme.elevatedSurface, style: StrokeStyle(lineWidth: 17, lineCap: .round))
-                    .frame(width: 218, height: 218)
-                Circle()
-                    .trim(from: 0, to: 0.75 * brightness / 100)
-                    .stroke(
-                        AngularGradient(colors: [Color(red: 0.82, green: 0.40, blue: 0.16), HEMMATheme.amber, Color(red: 1.0, green: 0.83, blue: 0.53)], center: .center),
-                        style: StrokeStyle(lineWidth: 17, lineCap: .round)
-                    )
-                    .rotationEffect(.degrees(135))
-                    .frame(width: 218, height: 218)
-                Circle()
-                    .fill(HEMMATheme.amber)
-                    .frame(width: 23, height: 23)
-                    .overlay(Circle().stroke(HEMMATheme.warmWhite.opacity(0.8), lineWidth: 2))
-                    .shadow(color: HEMMATheme.amber.opacity(0.55), radius: 9)
-                    .offset(y: -109)
-                    .rotationEffect(.degrees(135 + 270 * brightness / 100))
-                VStack(spacing: 4) {
-                    Image(systemName: isOn ? "sun.max.fill" : "sun.min")
-                        .font(.system(size: 22))
-                        .foregroundStyle(HEMMATheme.amber)
-                    Text("\(Int(brightness.rounded()))%")
-                        .font(.system(size: 39, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(HEMMATheme.warmWhite)
-                    Text("Ljusstyrka")
-                        .font(.caption)
-                        .foregroundStyle(HEMMATheme.secondaryText)
-                }
-            }
-            .frame(width: 250, height: 232)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        isDragging = true
-                        let center = CGPoint(x: 125, y: 116)
-                        let dx = value.location.x - center.x
-                        let dy = value.location.y - center.y
-                        var angle = atan2(dy, dx) * 180 / .pi + 90
-                        if angle < 0 { angle += 360 }
-                        let clockwise = angle >= 135 ? angle - 135 : angle + 225
-                        brightness = min(max(clockwise / 270 * 100, 0), 100)
-                    }
-                    .onEnded { _ in
-                        isDragging = false
-                        store.setBrightness(brightness, for: accessory)
-                    }
-            )
-            .accessibilityElement()
-            .accessibilityLabel("Ljusstyrka för \(accessory.name)")
-            .accessibilityValue("\(Int(brightness.rounded())) procent")
-            .accessibilityHint("Dra runt reglaget för att ändra ljusstyrkan")
-
-            HStack {
-                Image(systemName: "sun.min")
-                Spacer()
-                Text("Dra runt för att dimra")
-                    .font(.caption)
-                Spacer()
-                Image(systemName: "sun.max.fill")
-            }
-            .font(.caption2)
-            .foregroundStyle(HEMMATheme.secondaryText)
+            panelHeader
+            dial
+            dialFooter
         }
         .padding(20)
         .frame(maxWidth: .infinity)
@@ -475,17 +398,105 @@ private struct CircularBrightnessPanel: View {
             LinearGradient(colors: [HEMMATheme.elevatedSurface, HEMMATheme.surface], startPoint: .topLeading, endPoint: .bottomTrailing),
             in: RoundedRectangle(cornerRadius: 25, style: .continuous)
         )
-        .overlay {
-            RoundedRectangle(cornerRadius: 25, style: .continuous)
-                .strokeBorder(HEMMATheme.amber.opacity(0.15), lineWidth: 1)
-        }
+        .overlay(panelBorder)
         .onAppear { brightness = store.brightness(for: accessory) ?? 50 }
-        .onChange(of: store.revision) { _, _ in
-            if !isDragging && !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness) {
-                brightness = store.brightness(for: accessory) ?? brightness
-            }
-        }
+        .onChange(of: store.revision) { _, _ in syncBrightness() }
         .disabled(!accessory.isReachable || store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness))
     }
-}
 
+    private var panelHeader: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("LJUSSTYRKA").font(.caption.weight(.bold)).tracking(1.4).foregroundStyle(HEMMATheme.amber)
+                Text(accessory.name).font(.headline).foregroundStyle(HEMMATheme.warmWhite)
+            }
+            Spacer()
+            Image(systemName: "sun.max.fill").foregroundStyle(HEMMATheme.amber)
+        }
+    }
+
+    private var dial: some View {
+        ZStack {
+            Circle().stroke(HEMMATheme.elevatedSurface, style: StrokeStyle(lineWidth: 17, lineCap: .round)).frame(width: 218, height: 218)
+            dialProgress
+            dialKnob
+            dialValue
+        }
+        .frame(width: 250, height: 232)
+        .contentShape(Rectangle())
+        .gesture(dialGesture)
+        .accessibilityElement()
+        .accessibilityLabel("Ljusstyrka för \\(accessory.name)")
+        .accessibilityValue("\\(Int(brightness.rounded())) procent")
+        .accessibilityHint("Dra runt reglaget för att ändra ljusstyrkan")
+    }
+
+    private var dialProgress: some View {
+        Circle()
+            .trim(from: 0, to: 0.75 * brightness / 100)
+            .stroke(dialGradient, style: StrokeStyle(lineWidth: 17, lineCap: .round))
+            .rotationEffect(.degrees(135))
+            .frame(width: 218, height: 218)
+    }
+
+    private var dialKnob: some View {
+        Circle()
+            .fill(HEMMATheme.amber)
+            .frame(width: 23, height: 23)
+            .overlay(Circle().stroke(HEMMATheme.warmWhite.opacity(0.8), lineWidth: 2))
+            .shadow(color: HEMMATheme.amber.opacity(0.55), radius: 9)
+            .offset(y: -109)
+            .rotationEffect(.degrees(135 + 270 * brightness / 100))
+    }
+
+    private var dialValue: some View {
+        VStack(spacing: 4) {
+            Image(systemName: isOn ? "sun.max.fill" : "sun.min").font(.system(size: 22)).foregroundStyle(HEMMATheme.amber)
+            Text("\\(Int(brightness.rounded()))%").font(.system(size: 39, weight: .bold, design: .rounded).monospacedDigit()).foregroundStyle(HEMMATheme.warmWhite)
+            Text("Ljusstyrka").font(.caption).foregroundStyle(HEMMATheme.secondaryText)
+        }
+    }
+
+    private var dialGradient: AngularGradient {
+        AngularGradient(colors: [Color(red: 0.82, green: 0.40, blue: 0.16), HEMMATheme.amber, Color(red: 1.0, green: 0.83, blue: 0.53)], center: .center)
+    }
+
+    private var dialGesture: some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { value in
+                isDragging = true
+                let dx = value.location.x - 125
+                let dy = value.location.y - 116
+                var angle = atan2(dy, dx) * 180 / .pi + 90
+                if angle < 0 { angle += 360 }
+                let clockwise = angle >= 135 ? angle - 135 : angle + 225
+                brightness = min(max(clockwise / 270 * 100, 0), 100)
+            }
+            .onEnded { _ in
+                isDragging = false
+                store.setBrightness(brightness, for: accessory)
+            }
+    }
+
+    private var dialFooter: some View {
+        HStack {
+            Image(systemName: "sun.min")
+            Spacer()
+            Text("Dra runt för att dimra").font(.caption)
+            Spacer()
+            Image(systemName: "sun.max.fill")
+        }
+        .font(.caption2)
+        .foregroundStyle(HEMMATheme.secondaryText)
+    }
+
+    private var panelBorder: some View {
+        RoundedRectangle(cornerRadius: 25, style: .continuous)
+            .strokeBorder(HEMMATheme.amber.opacity(0.15), lineWidth: 1)
+    }
+
+    private func syncBrightness() {
+        guard !isDragging, !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness) else { return }
+        brightness = store.brightness(for: accessory) ?? brightness
+    }
+}
