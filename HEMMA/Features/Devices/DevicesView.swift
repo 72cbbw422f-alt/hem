@@ -54,7 +54,7 @@ struct DevicesView: View {
             Spacer()
             if store.isLight(accessory), let state = store.powerState(for: accessory) {
                 Toggle("Enhet", isOn: Binding(
-                    get: { state },
+                    get: { store.powerState(for: accessory) ?? state },
                     set: { store.setPower($0, for: accessory) }
                 ))
                 .labelsHidden()
