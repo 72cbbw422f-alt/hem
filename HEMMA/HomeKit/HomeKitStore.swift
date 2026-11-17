@@ -71,8 +71,16 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func refresh() {
+        // HomeKit keeps HMHomeManager synchronized automatically; refresh the
+        // published snapshot from its current state instead of calling a
+        // nonexistent reload API.
         isLoading = true
-        manager.reload()
+        homes = manager.homes
+        homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        isAuthorized = true
+        isLoading = false
+        errorMessage = nil
+        revision += 1
     }
 
     var roomCount: Int {
