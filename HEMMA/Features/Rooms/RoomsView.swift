@@ -84,7 +84,7 @@ struct RoomsView: View {
     }
 }
 
-private struct RoomDetailView: View {
+struct RoomDetailView: View {
     let room: HMRoom
     @ObservedObject var store: HomeKitStore
 
