@@ -55,8 +55,11 @@ struct DevicesView: View {
                 Text(accessory.name)
                     .font(.headline)
                     .foregroundStyle(HEMMATheme.warmWhite)
-                Text(accessory.isReachable ? "Tillgänglig" : "Kan inte nås")
+                Text(accessory.room?.name ?? "Inte tilldelad något rum")
                     .font(.caption)
+                    .foregroundStyle(HEMMATheme.secondaryText)
+                Text(accessory.isReachable ? "Tillgänglig" : "Kan inte nås")
+                    .font(.caption2)
                     .foregroundStyle(accessory.isReachable ? HEMMATheme.secondaryText : .red)
             }
             Spacer()
