@@ -22,7 +22,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     func homeManagerDidUpdateHomes(_ manager: HMHomeManager) {
         homes = manager.homes
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
-        isAuthorized = true
+        isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = nil
         revision += 1
@@ -79,7 +79,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         isLoading = true
         homes = manager.homes
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
-        isAuthorized = true
+        isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = nil
         revision += 1
