@@ -191,23 +191,23 @@ private struct LightControlCard: View {
             }
 
             if store.brightnessCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Ljusstyrka", value: $brightnessValue, range: 0...100, suffix: "%") { value in
+                controlSlider(title: "Ljusstyrka", type: HMCharacteristicTypeBrightness, value: $brightnessValue, range: 0...100, suffix: "%") { value in
                     store.setBrightness(value, for: accessory)
                 }
             }
 
             if store.colorTemperatureCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgtemperatur", value: $temperatureValue, range: 2000...6500, suffix: " K") { value in
+                controlSlider(title: "Färgtemperatur", type: HMCharacteristicTypeColorTemperature, value: $temperatureValue, range: 2000...6500, suffix: " K") { value in
                     store.setColorTemperature(kelvin: value, for: accessory)
                 }
             }
 
             if store.hueCharacteristic(for: accessory) != nil,
                store.saturationCharacteristic(for: accessory) != nil {
-                controlSlider(title: "Färgton", value: $hueValue, range: 0...360, suffix: "°") { value in
+                controlSlider(title: "Färgton", type: HMCharacteristicTypeHue, value: $hueValue, range: 0...360, suffix: "°") { value in
                     store.setHue(value, for: accessory)
                 }
-                controlSlider(title: "Färgmättnad", value: $saturationValue, range: 0...100, suffix: "%") { value in
+                controlSlider(title: "Färgmättnad", type: HMCharacteristicTypeSaturation, value: $saturationValue, range: 0...100, suffix: "%") { value in
                     store.setSaturation(value, for: accessory)
                 }
             }
@@ -220,6 +220,7 @@ private struct LightControlCard: View {
 
     private func controlSlider(
         title: String,
+        type: String,
         value: Binding<Double>,
         range: ClosedRange<Double>,
         suffix: String,
@@ -239,7 +240,7 @@ private struct LightControlCard: View {
                 if !editing { onCommit(value.wrappedValue) }
             }
             .tint(HEMMATheme.amber)
-            .disabled(!accessory.isReachable)
+            .disabled(!accessory.isReachable || store.isCharacteristicPending(for: accessory, type: type))
         }
     }
 
