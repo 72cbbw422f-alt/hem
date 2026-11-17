@@ -22,6 +22,7 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 25) {
                     header
                     heroCard
+                    homeOverview
                     statusMetrics
                     quickLightingCard
                     roomsSection
@@ -115,6 +116,54 @@ struct DashboardView: View {
         let on = lightsOnCount
         let total = homeStore.lightAccessories.count
         return total == 0 ? "Ditt hem är redo när du är det." : "\(on) av \(total) lampor lyser just nu."
+    }
+
+
+    private var homeOverview: some View {
+        HStack(spacing: 11) {
+            if let reading = homeStore.temperatureReadings.first {
+                overviewInfoCard(
+                    symbol: "thermometer.medium",
+                    value: String(format: "%.1f°", reading.celsius),
+                    title: "Inomhus",
+                    detail: reading.roomName
+                )
+            }
+            overviewInfoCard(
+                symbol: "appletv",
+                value: homeStore.homeHubStatus,
+                title: "Hemhub",
+                detail: "Apple TV"
+            )
+        }
+    }
+
+    private func overviewInfoCard(symbol: String, value: String, title: String, detail: String) -> some View {
+        HStack(spacing: 11) {
+            Image(systemName: symbol)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(HEMMATheme.amber)
+                .frame(width: 42, height: 42)
+                .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 14))
+            VStack(alignment: .leading, spacing: 3) {
+                Text(value)
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(HEMMATheme.warmWhite)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(HEMMATheme.warmWhite)
+                Text(detail)
+                    .font(.caption2)
+                    .foregroundStyle(HEMMATheme.secondaryText)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(13)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 19, style: .continuous))
     }
 
     private var statusMetrics: some View {
