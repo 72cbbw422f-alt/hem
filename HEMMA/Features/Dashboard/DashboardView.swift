@@ -66,61 +66,39 @@ struct DashboardView: View {
 
     private var heroCard: some View {
         ZStack(alignment: .bottomLeading) {
-            LinearGradient(
-                colors: [
-                    Color(red: 0.30, green: 0.27, blue: 0.24),
-                    Color(red: 0.15, green: 0.17, blue: 0.19),
-                    Color(red: 0.07, green: 0.09, blue: 0.12)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            GeometryReader { proxy in
-                ZStack {
-                    Circle()
-                        .fill(HEMMATheme.amber.opacity(0.16))
-                        .frame(width: 190, height: 190)
-                        .blur(radius: 38)
-                        .offset(x: proxy.size.width * 0.46, y: -30)
-                    Image(systemName: "house.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .foregroundStyle(.white.opacity(0.055))
-                        .frame(width: 230, height: 190)
-                        .offset(x: proxy.size.width * 0.28, y: 12)
-                    Image(systemName: "lightbulb.2.fill")
-                        .font(.system(size: 44, weight: .light))
-                        .foregroundStyle(HEMMATheme.amber.opacity(0.72))
-                        .offset(x: proxy.size.width * 0.70, y: -proxy.size.height * 0.23)
+            AsyncImage(url: RoomPhotography.livingRoom) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                default:
+                    LinearGradient(colors: [Color(red: 0.30, green: 0.22, blue: 0.16), Color(red: 0.07, green: 0.09, blue: 0.12)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.65)],
-                startPoint: .center,
-                endPoint: .bottom
-            )
-            VStack(alignment: .leading, spacing: 7) {
+            .frame(height: 230)
+            .clipped()
+            LinearGradient(colors: [.black.opacity(0.04), .black.opacity(0.18), .black.opacity(0.82)], startPoint: .top, endPoint: .bottom)
+            VStack(alignment: .leading, spacing: 8) {
                 Label(homeStore.isAuthorized ? "HEMMET ÄR ANSLUTET" : "ANSLUTER TILL DITT HEM", systemImage: "house")
                     .font(.caption2.weight(.bold))
                     .tracking(1.3)
                     .foregroundStyle(HEMMATheme.amber)
-                Text(greeting)
+                Text("\(greeting), Niklas")
                     .font(.system(size: 25, weight: .semibold, design: .rounded))
                     .foregroundStyle(.white)
                 Text(heroSubtitle)
                     .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.76))
+                    .foregroundStyle(.white.opacity(0.84))
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(20)
         }
-        .frame(height: 190)
+        .frame(height: 230)
         .clipShape(RoundedRectangle(cornerRadius: 27, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 27, style: .continuous)
-                .strokeBorder(.white.opacity(0.08), lineWidth: 1)
+                .strokeBorder(.white.opacity(0.10), lineWidth: 1)
         }
+        .shadow(color: .black.opacity(0.28), radius: 18, y: 10)
     }
 
     private var greeting: String {
@@ -244,21 +222,25 @@ struct DashboardView: View {
             RoomDetailView(room: room, store: homeStore)
         } label: {
             ZStack(alignment: .bottomLeading) {
-                roomGradient(for: room.name)
-                Image(systemName: roomSymbol(for: room.name))
-                    .font(.system(size: 62, weight: .ultraLight))
-                    .foregroundStyle(.white.opacity(0.20))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                    .padding(14)
+                AsyncImage(url: RoomPhotography.image(for: room.name)) { phase in
+                    switch phase {
+                    case .success(let image): image.resizable().scaledToFill()
+                    default: roomGradient(for: room.name)
+                    }
+                }
+                .frame(width: 166, height: 142)
+                .clipped()
                 LinearGradient(colors: [.clear, .black.opacity(0.78)], startPoint: .center, endPoint: .bottom)
                 VStack(alignment: .leading, spacing: 5) {
                     Text(room.name)
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
-                    Text("\(room.accessories.filter(homeStore.isLight).count) lampor")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.78))
+                    HStack(spacing: 5) {
+                        Image(systemName: "lightbulb.fill").font(.caption2)
+                        Text("\(room.accessories.filter(homeStore.isLight).count) lampor").font(.caption)
+                    }
+                    .foregroundStyle(.white.opacity(0.82))
                 }
                 .padding(14)
             }
@@ -266,8 +248,9 @@ struct DashboardView: View {
             .clipShape(RoundedRectangle(cornerRadius: 21, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 21, style: .continuous)
-                    .strokeBorder(.white.opacity(0.09), lineWidth: 1)
+                    .strokeBorder(.white.opacity(0.10), lineWidth: 1)
             }
+            .shadow(color: .black.opacity(0.22), radius: 10, y: 5)
         }
         .buttonStyle(.plain)
     }
