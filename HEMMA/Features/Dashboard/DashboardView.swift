@@ -49,11 +49,6 @@ struct DashboardView: View {
                     .tracking(1.8)
                     .foregroundStyle(HEMMATheme.secondaryText)
                 Spacer()
-                Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(HEMMATheme.warmWhite)
-                    .frame(width: 42, height: 42)
-                    .background(HEMMATheme.surface, in: Circle())
             }
             Text("Hemma")
                 .font(.system(size: 38, weight: .bold, design: .rounded))
