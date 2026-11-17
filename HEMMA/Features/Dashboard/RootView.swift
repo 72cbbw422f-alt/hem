@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var homeStore = HomeKitStore()
+    @State private var pendingWidgetLightingAction = false
 
     var body: some View {
         TabView {
@@ -18,6 +19,24 @@ struct RootView: View {
         }
         .tint(HEMMATheme.amber)
         .environmentObject(homeStore)
+        .onOpenURL { url in
+            guard url.scheme == "hemma", url.host == "lights", url.path == "/toggle" else { return }
+            pendingWidgetLightingAction = true
+            performPendingWidgetActionIfPossible()
+        }
+        .onChange(of: homeStore.revision) { _, _ in
+            performPendingWidgetActionIfPossible()
+        }
+    }
+
+    private func performPendingWidgetActionIfPossible() {
+        guard pendingWidgetLightingAction, !homeStore.isLoading else { return }
+        guard homeStore.isAuthorized else {
+            // Keep the action unexecuted; the dashboard explains how to grant Home access.
+            return
+        }
+        pendingWidgetLightingAction = false
+        homeStore.setAllLights(homeStore.allLightsAreOn != true)
     }
 }
 
