@@ -52,15 +52,14 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 - Complex automation authoring.
 - Apple Watch app.
 
-## Widget implementation constraints (checked against Apple App Intents documentation, November 2026)
-- Interactive WidgetKit buttons and toggles invoke App Intents. The intent must complete its action and any required persistence before returning; request a timeline reload after a successful command.
-- Widget extensions execute in a separate process. Code placed in an app extension runs in the background; App Intent code placed in the main app bundle can run in the foreground or background.
-- Apple's `allowedExecutionTargets` can restrict an intent to `.main`, but this is not a magic bridge to the app's in-memory objects. The intent must be packaged and discoverable in the relevant targets as Apple documents, and it must create or obtain its own HomeKit manager in the process where it executes.
-- For a standard interactive widget, place the App Intent implementation in the main app bundle if it needs the app's foreground execution path. Apple documents `supportedModes` as a preference, not a guarantee; an intent implemented in an App Intents or Widget extension always runs in the background. A foreground run brings HEMMA forward, so this is an explicit UX trade-off.
-- Do not use an optimistic `Toggle` for the all-lights command: SwiftUI may flip its appearance before HomeKit confirms the write. Prefer a `Button` that awaits the HomeKit result, then lets the guaranteed widget timeline reload display the confirmed state or a clear error.
-- WidgetKit Control widgets have additional runtime rules: their control intent runs from the widget extension in the background. Do not assume that `supportedModes` can move a Control widget action into the app process.
+## Widget implementation constraints (checked against Apple App Intents and WidgetKit documentation, November 2026)
+- Interactive widget buttons and toggles invoke App Intents. The intent's asynchronous `perform()` must finish the action and persist any data needed by the next timeline before returning. WidgetKit guarantees a timeline reload after a button or toggle interaction.
+- Widget extension code runs in a separate process. App Intent code in the main app bundle can run in the app process; code in an App Intents extension or Widget extension always runs in the background. `supportedModes` expresses preferred runtime modes but is not a guarantee and cannot override extension runtime restrictions.
+- Apple documents `allowedExecutionTargets = .main` for intents whose writes must execute in the main app process. Intent packaging and target membership must follow Apple's guidance; do not assume the widget can call the main app's in-memory `HomeKitStore`.
+- A widget `Button` is a good fit for an all-lights action because it doesn't display a persistent on/off state. A widget `Toggle` updates optimistically before its intent finishes; if used, the intent must reconcile the displayed state with the confirmed HomeKit result or restore the prior state and show an error after failure. Do not treat the optimistic animation as proof of a successful HomeKit write.
+- A standard interactive widget can perform useful actions without opening the app. Opening HEMMA is a fallback only if the intended HomeKit execution path cannot be made reliable.
+- WidgetKit Control widgets have their own execution rules: their action runs in the widget extension's background process. Do not assume `supportedModes` can move a Control widget action into the app process.
 - Before choosing a standard interactive widget versus a Control widget, build a minimal proof of concept using the exact CI Xcode SDK and test a real HomeKit write on a physical iPhone with the intended sideload signing profile. If the process cannot access HomeKit reliably, the widget must open HEMMA rather than report a false success.
-- Do not assume that an intent running in the widget extension can reuse the main app's in-memory HomeKit manager.
 - Widget timeline content must not imply a live HomeKit state unless it has been read from an authorized HomeKit manager. Unknown or stale values must be labelled as such.
 - Keep the first widget iteration conservative: prove an end-to-end all-lights action and confirmed result before adding room-specific controls.
 - App Group storage is not assumed for the sideload build. Do not make it a prerequisite until its signing and provisioning implications are validated for the distribution route.
