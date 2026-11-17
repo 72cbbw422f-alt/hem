@@ -20,7 +20,7 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 3. Distinguish on, off, unavailable and unknown. A missing or stale value must never be presented as confirmed off.
 4. A command is pending until HomeKit reports completion. Surface errors; do not optimistically claim success.
 5. Bulk all-lights actions target light-capable accessories only, not every switch or outlet.
-6. Avoid duplicate writes and serialize conflicting commands per characteristic.
+6. Avoid duplicate writes and serialize conflicting commands per characteristic, including brightness and color controls.
 7. Request only permissions needed for the current feature set.
 8. Keep the first release local and simple; no backend or account system.
 
@@ -38,7 +38,7 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 ## First release scope
 - Read homes and rooms.
 - Discover accessories and supported light controls.
-- On/off control with pending-command locking and HomeKit completion/error feedback.
+- On/off, brightness and color writes with per-characteristic pending-command locking and HomeKit completion/error feedback.
 - Brightness where supported.
 - Room-level overview.
 - Favorite rooms, persisted locally and surfaced on the dashboard.
