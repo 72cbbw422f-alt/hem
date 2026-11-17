@@ -40,9 +40,7 @@ targets:
     sources:
       - path: HEMMAWidget
     info:
-      properties:
-        NSExtension:
-          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+      path: HEMMAWidget/Info.plist
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: se.hemma.app.widget
