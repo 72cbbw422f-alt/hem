@@ -75,7 +75,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             Task { @MainActor in
                 self?.pendingSceneIDs.remove(actionSet.uniqueIdentifier)
                 if let error {
-                    self?.errorMessage = "Kunde inte starta \\(actionSet.name): \\(error.localizedDescription)"
+                    self?.errorMessage = "Kunde inte starta \(actionSet.name): \(error.localizedDescription)"
                 } else {
                     self?.errorMessage = nil
                 }
