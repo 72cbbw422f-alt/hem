@@ -32,7 +32,9 @@ struct HEMMALightingWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HEMMAWidgetProvider()) { _ in
             HEMMALightingWidgetView()
-                .containerBackground(for: .widget) {\n                    LinearGradient(colors: [HEMMAWidgetStyle.surface, HEMMAWidgetStyle.background], startPoint: .topLeading, endPoint: .bottomTrailing)\n                }
+                .containerBackground(for: .widget) {
+                    LinearGradient(colors: [HEMMAWidgetStyle.surface, HEMMAWidgetStyle.background], startPoint: .topLeading, endPoint: .bottomTrailing)
+                }
         }
         .configurationDisplayName("HEMMA – Belysning")
         .description("Öppna HEMMA och styr belysningen i ditt hem.")
