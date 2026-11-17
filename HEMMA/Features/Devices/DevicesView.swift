@@ -75,7 +75,7 @@ struct DevicesView: View {
         .background(HEMMATheme.background.ignoresSafeArea())
         .sheet(isPresented: Binding(
             get: { selectedLight != nil },
-            set: { if !$0 { selectedLight = nil } }
+            set: { if !$0 { selectedLight = nil; longPressRecognized = false } }
         )) {
             if let selectedLight {
                 LightControlCard(accessory: selectedLight, store: store)
