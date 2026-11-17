@@ -152,11 +152,22 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     var favoriteRooms: [HMRoom] {
-        homes.flatMap(\.rooms).filter(isFavorite)
+        homes.flatMap(visibleRooms(in:)).filter(isFavorite)
+    }
+
+    /// A hub-only assignment (for example an Apple TV named Hemmabio) is not a room to navigate.
+    func isHomeHubAccessory(_ accessory: HMAccessory) -> Bool {
+        accessory.category.categoryType == HMAccessoryCategoryTypeTelevision
+    }
+
+    func visibleRooms(in home: HMHome) -> [HMRoom] {
+        home.rooms.filter { room in
+            !room.accessories.isEmpty && !room.accessories.allSatisfy(isHomeHubAccessory)
+        }
     }
 
     var roomCount: Int {
-        homes.reduce(0) { $0 + $1.rooms.count }
+        homes.reduce(0) { $0 + visibleRooms(in: $1).count }
     }
 
     var lightAccessories: [HMAccessory] {
