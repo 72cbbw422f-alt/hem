@@ -177,11 +177,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     var homeHubStatus: String {
         guard let home = homes.first else { return "Inväntar hem" }
-        switch home.hubState {
+        switch home.homeHubState {
         case .connected: return "Ansluten"
         case .disconnected: return "Frånkopplad"
-        case .pending: return "Ansluter"
-        case .notConfigured: return "Ingen hemhubb"
+        case .notAvailable: return "Ingen hemhubb"
         @unknown default: return "Okänd status"
         }
     }
