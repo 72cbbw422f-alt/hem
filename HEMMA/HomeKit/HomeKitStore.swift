@@ -232,7 +232,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     func setAllLights(_ isOn: Bool) {
         let availableLights = lightAccessories
-            .filter(\\.isReachable)
+            .filter(\.isReachable)
             .filter { !isPowerCommandPending(for: $0) }
 
         guard !availableLights.isEmpty else {
