@@ -15,6 +15,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     @Published private(set) var favoriteRoomIDs: Set<String> = UserDefaults.standard.stringArray(forKey: "hemma.favoriteRoomIDs").map(Set.init) ?? []
 
     private let manager = HMHomeManager()
+    private var queuedCharacteristicWrites: [String: (value: NSNumber, characteristic: HMCharacteristic, accessory: HMAccessory, feature: String)] = [:]
 
     override init() {
         super.init()
@@ -225,7 +226,11 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             return
         }
         let commandID = "\(accessory.uniqueIdentifier.uuidString):\(characteristic.characteristicType)"
-        guard !pendingCharacteristicIDs.contains(commandID) else { return }
+        if pendingCharacteristicIDs.contains(commandID) {
+            // Preserve the newest slider value while HomeKit acknowledges the previous write.
+            queuedCharacteristicWrites[commandID] = (value, characteristic, accessory, feature)
+            return
+        }
         errorMessage = nil
         pendingCharacteristicIDs.insert(commandID)
         revision += 1
@@ -234,6 +239,9 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.pendingCharacteristicIDs.remove(commandID)
                 if let error {
                     self?.errorMessage = "Kunde inte ändra \(feature) på \(accessory.name): \(error.localizedDescription)"
+                    self?.queuedCharacteristicWrites.removeValue(forKey: commandID)
+                } else if let queued = self?.queuedCharacteristicWrites.removeValue(forKey: commandID) {
+                    self?.write(queued.value, to: queued.characteristic, accessory: queued.accessory, feature: queued.feature)
                 }
                 self?.revision += 1
             }
