@@ -33,10 +33,10 @@ struct SettingsView: View {
                             .disabled(store.isLoading)
                         }
                         Divider().overlay(HEMMATheme.secondaryText.opacity(0.25))
-                        settingRow("Hem", value: "\(store.homes.count)")
-                        settingRow("Rum", value: "\(store.roomCount)")
-                        settingRow("Lampor", value: "\(store.lightAccessories.count)")
-                        settingRow("Övriga tillbehör", value: "\(store.homes.flatMap(\.accessories).filter { !store.isLight($0) }.count)")
+                        settingRow("Hem", value: store.isAuthorized ? "\(store.homes.count)" : "—")
+                        settingRow("Rum", value: store.isAuthorized ? "\(store.roomCount)" : "—")
+                        settingRow("Lampor", value: store.isAuthorized ? "\(store.lightAccessories.count)" : "—")
+                        settingRow("Övriga tillbehör", value: store.isAuthorized ? "\(store.homes.flatMap(\.accessories).filter { !store.isLight($0) }.count)" : "—")
                     }
                     .padding(18)
                     .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
