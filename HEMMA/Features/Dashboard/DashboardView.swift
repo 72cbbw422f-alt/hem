@@ -2,7 +2,7 @@ import SwiftUI
 import HomeKit
 
 struct DashboardView: View {
-    @StateObject private var homeStore = HomeKitStore()
+    @EnvironmentObject private var homeStore: HomeKitStore
 
     var body: some View {
         NavigationStack {
