@@ -38,10 +38,10 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 ## First release scope
 - Read homes and rooms.
 - Discover accessories and supported light controls.
-- On/off control.
+- On/off control with pending-command locking and HomeKit completion/error feedback.
 - Brightness where supported.
 - Room-level overview.
-- Favorite rooms.
+- Favorite rooms, persisted locally and surfaced on the dashboard.
 - Widget with room buttons and a prominent all-lights action, once entitlement and widget execution are validated.
 
 ## Explicitly deferred
