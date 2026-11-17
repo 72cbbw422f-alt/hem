@@ -77,8 +77,6 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.pendingSceneIDs.remove(actionSet.uniqueIdentifier)
                 if let error {
                     self?.errorMessage = "Kunde inte starta \(actionSet.name): \(error.localizedDescription)"
-                } else {
-                    self?.errorMessage = nil
                 }
                 self?.revision += 1
             }
@@ -210,6 +208,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         }
         let commandID = "\(accessory.uniqueIdentifier.uuidString):\(characteristic.characteristicType)"
         guard !pendingCharacteristicIDs.contains(commandID) else { return }
+        errorMessage = nil
         pendingCharacteristicIDs.insert(commandID)
         revision += 1
         characteristic.writeValue(value) { [weak self] error in
@@ -217,8 +216,6 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.pendingCharacteristicIDs.remove(commandID)
                 if let error {
                     self?.errorMessage = "Kunde inte ändra \(feature) på \(accessory.name): \(error.localizedDescription)"
-                } else {
-                    self?.errorMessage = nil
                 }
                 self?.revision += 1
             }
@@ -268,6 +265,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             revision += 1
             return
         }
+        errorMessage = nil
         pendingPowerAccessoryIDs.insert(accessory.uniqueIdentifier)
         revision += 1
         characteristic.writeValue(isOn) { [weak self] error in
@@ -275,8 +273,6 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.pendingPowerAccessoryIDs.remove(accessory.uniqueIdentifier)
                 if let error {
                     self?.errorMessage = "Kunde inte styra \(accessory.name): \(error.localizedDescription)"
-                } else {
-                    self?.errorMessage = nil
                 }
                 self?.revision += 1
             }
