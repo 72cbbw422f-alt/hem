@@ -98,7 +98,7 @@ struct DashboardView: View {
                     .frame(width: 48, height: 48)
                     .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 15))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(homeStore.allLightsAreOn == true ? "Släck alla lampor" : "Tänd alla lampor")
+                    Text(allLightsTitle)
                         .font(.headline)
                         .foregroundStyle(HEMMATheme.warmWhite)
                     Text("Styr endast tillbehör som identifierats som lampor")
@@ -113,8 +113,16 @@ struct DashboardView: View {
             .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
         }
         .buttonStyle(.plain)
-        .disabled(homeStore.lightAccessories.contains { !$0.isReachable })
-        .opacity(homeStore.lightAccessories.contains { !$0.isReachable } ? 0.55 : 1)
+        .disabled(!homeStore.lightAccessories.contains(where: \.isReachable) || !homeStore.pendingPowerAccessoryIDs.isEmpty)
+        .opacity(!homeStore.lightAccessories.contains(where: \.isReachable) || !homeStore.pendingPowerAccessoryIDs.isEmpty ? 0.55 : 1)
+    }
+
+    private var allLightsTitle: String {
+        switch homeStore.allLightsAreOn {
+        case .some(true): return "Släck alla lampor"
+        case .some(false): return "Tänd alla lampor"
+        case .none: return "Tänd tillgängliga lampor"
+        }
     }
 
     private var header: some View {
