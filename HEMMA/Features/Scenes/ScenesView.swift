@@ -39,14 +39,20 @@ struct ScenesView: View {
                                             .foregroundStyle(HEMMATheme.secondaryText)
                                     }
                                     Spacer()
-                                    Image(systemName: "play.fill")
-                                        .font(.caption)
-                                        .foregroundStyle(HEMMATheme.amber)
+                                    if store.isScenePending(item.actionSet) {
+                                        ProgressView()
+                                            .tint(HEMMATheme.amber)
+                                    } else {
+                                        Image(systemName: "play.fill")
+                                            .font(.caption)
+                                            .foregroundStyle(HEMMATheme.amber)
+                                    }
                                 }
                                 .padding(16)
                                 .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
                             }
                             .buttonStyle(.plain)
+                            .disabled(store.isScenePending(item.actionSet))
                         }
                     }
 
