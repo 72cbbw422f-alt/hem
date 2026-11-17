@@ -137,6 +137,7 @@ private struct LightControlCard: View {
                     ))
                     .labelsHidden()
                     .tint(HEMMATheme.amber)
+                .disabled(store.isPowerCommandPending(for: accessory))
                 } else {
                     Text("Okänd status")
                         .font(.caption)
