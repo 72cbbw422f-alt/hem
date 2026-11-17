@@ -179,16 +179,6 @@ struct RoomDetailView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                Button {
-                    dismiss()
-                } label: {
-                    Label("Tillbaka", systemImage: "chevron.left")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(HEMMATheme.amber)
-                        .padding(.vertical, 8)
-                }
-                .buttonStyle(.plain)
-
                 ZStack(alignment: .bottomLeading) {
                     AsyncImage(url: RoomPhotography.image(for: room.name)) { phase in
                         switch phase {
@@ -278,7 +268,10 @@ struct RoomDetailView: View {
             .padding(.bottom, 30)
         }
         .background(HEMMATheme.background.ignoresSafeArea())
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle(room.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(false)
+        .toolbar(.visible, for: .navigationBar)
     }
 
     private var roomSymbol: String {
@@ -437,8 +430,8 @@ private struct CircularBrightnessPanel: View {
         .contentShape(Rectangle())
         .gesture(dialGesture)
         .accessibilityElement()
-        .accessibilityLabel("Ljusstyrka för \\(accessory.name)")
-        .accessibilityValue("\\(Int(brightness.rounded())) procent")
+        .accessibilityLabel("Ljusstyrka för \(accessory.name)")
+        .accessibilityValue("\(Int(brightness.rounded())) procent")
         .accessibilityHint("Dra runt reglaget för att ändra ljusstyrkan")
     }
 
@@ -463,7 +456,7 @@ private struct CircularBrightnessPanel: View {
     private var dialValue: some View {
         VStack(spacing: 4) {
             Image(systemName: isOn ? "sun.max.fill" : "sun.min").font(.system(size: 22)).foregroundStyle(HEMMATheme.amber)
-            Text("\\(Int(brightness.rounded()))%").font(.system(size: 39, weight: .bold, design: .rounded).monospacedDigit()).foregroundStyle(HEMMATheme.warmWhite)
+            Text("\(Int(brightness.rounded()))%").font(.system(size: 39, weight: .bold, design: .rounded).monospacedDigit()).foregroundStyle(HEMMATheme.warmWhite)
             Text("Ljusstyrka").font(.caption).foregroundStyle(HEMMATheme.secondaryText)
         }
     }
