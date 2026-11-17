@@ -16,6 +16,43 @@ struct DashboardView: View {
                     if homeStore.isAuthorized && !homeStore.lightAccessories.isEmpty {
                         allLightsButton
                     }
+                    if !homeStore.favoriteRooms.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("Favoritrum")
+                                    .font(.title2.weight(.semibold))
+                                    .foregroundStyle(HEMMATheme.warmWhite)
+                                Spacer()
+                                Image(systemName: "star.fill")
+                                    .foregroundStyle(HEMMATheme.amber)
+                            }
+                            ForEach(homeStore.favoriteRooms, id: \.uniqueIdentifier) { room in
+                                HStack(spacing: 12) {
+                                    Image(systemName: "star.fill")
+                                        .foregroundStyle(HEMMATheme.amber)
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(room.name)
+                                            .font(.headline)
+                                            .foregroundStyle(HEMMATheme.warmWhite)
+                                        Text("\(room.accessories.filter(homeStore.isLight).count) lampor")
+                                            .font(.caption)
+                                            .foregroundStyle(HEMMATheme.secondaryText)
+                                    }
+                                    Spacer()
+                                    Button {
+                                        homeStore.toggleFavorite(room)
+                                    } label: {
+                                        Image(systemName: "star.slash")
+                                            .foregroundStyle(HEMMATheme.secondaryText)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel("Ta bort \(room.name) från favoriter")
+                                }
+                                .padding(15)
+                                .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
+                            }
+                        }
+                    }
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Ditt hem")
                             .font(.title2.weight(.semibold))
