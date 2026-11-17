@@ -6,6 +6,7 @@ on:
     paths:
       - "HEMMA/**"
       - "HEMMAWidget/**"
+      - "Scripts/**"
       - "project.yml"
       - ".github/workflows/ios-build.yml"
 
@@ -17,6 +18,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      - name: Generate Hemma app icon
+        run: swift Scripts/generate_app_icon.swift
       - name: Verify Apple toolchain
         run: |
           xcodebuild -version
@@ -27,6 +30,11 @@ jobs:
         run: xcodegen generate
       - name: Build for device
         run: xcodebuild -project HEMMA.xcodeproj -scheme HEMMA -sdk iphoneos -configuration Debug -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Verify compiled app icon
+        run: |
+          APP_PATH="build/DerivedData/Build/Products/Debug-iphoneos/HEMMA.app"
+          test -s "$APP_PATH/Assets.car"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIcons:CFBundlePrimaryIcon:CFBundleIconName" "$APP_PATH/Info.plist" | grep -Fx "AppIcon"
       - name: Verify embedded widget
         run: |
           APP_PATH="build/DerivedData/Build/Products/Debug-iphoneos/HEMMA.app"
