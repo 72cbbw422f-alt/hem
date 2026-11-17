@@ -394,6 +394,13 @@ private struct CircularBrightnessPanel: View {
         VStack(spacing: 15) {
             panelHeader
             dial
+            Slider(value: $brightness, in: 0...100) { editing in
+                if !editing {
+                    store.setBrightness(brightness, for: accessory)
+                }
+            }
+            .tint(HEMMATheme.amber)
+            .accessibilityLabel("Ljusstyrka")
             dialFooter
         }
         .padding(20)
