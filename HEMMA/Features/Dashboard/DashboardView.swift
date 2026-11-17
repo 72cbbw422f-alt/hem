@@ -27,29 +27,29 @@ struct DashboardView: View {
                                     .foregroundStyle(HEMMATheme.amber)
                             }
                             ForEach(homeStore.favoriteRooms, id: \.uniqueIdentifier) { room in
-                                HStack(spacing: 12) {
-                                    Image(systemName: "star.fill")
-                                        .foregroundStyle(HEMMATheme.amber)
-                                    VStack(alignment: .leading, spacing: 3) {
-                                        Text(room.name)
-                                            .font(.headline)
-                                            .foregroundStyle(HEMMATheme.warmWhite)
-                                        Text("\(room.accessories.filter(homeStore.isLight).count) lampor")
-                                            .font(.caption)
+                                NavigationLink {
+                                    RoomDetailView(room: room, store: homeStore)
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "star.fill")
+                                            .foregroundStyle(HEMMATheme.amber)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(room.name)
+                                                .font(.headline)
+                                                .foregroundStyle(HEMMATheme.warmWhite)
+                                            Text("\(room.accessories.filter(homeStore.isLight).count) lampor")
+                                                .font(.caption)
+                                                .foregroundStyle(HEMMATheme.secondaryText)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption.weight(.bold))
                                             .foregroundStyle(HEMMATheme.secondaryText)
                                     }
-                                    Spacer()
-                                    Button {
-                                        homeStore.toggleFavorite(room)
-                                    } label: {
-                                        Image(systemName: "star.slash")
-                                            .foregroundStyle(HEMMATheme.secondaryText)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabel("Ta bort \(room.name) från favoriter")
+                                    .padding(15)
+                                    .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
                                 }
-                                .padding(15)
-                                .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
+                                .buttonStyle(.plain)
                             }
                         }
                     }
