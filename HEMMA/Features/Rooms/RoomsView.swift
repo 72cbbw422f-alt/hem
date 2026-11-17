@@ -439,14 +439,15 @@ struct LightControlCard: View {
                     .font(.subheadline.weight(.semibold).monospacedDigit())
                     .foregroundStyle(HEMMATheme.warmWhite)
             }
-            Slider(value: value, in: range) { editing in
-                isEditing.wrappedValue = editing
-                if !editing { onCommit(value.wrappedValue) }
-            }
-            .tint(tint)
-            .scaleEffect(x: 1, y: 1.18, anchor: .center)
-            .padding(.vertical, 3)
-            .disabled(!accessory.isReachable)
+            HEMMAControlSlider(
+                value: value,
+                range: range,
+                tint: tint,
+                isEnabled: accessory.isReachable,
+                onEditingChanged: { isEditing.wrappedValue = $0 },
+                onCommit: onCommit
+            )
+            .frame(height: 30)
         }
     }
 
@@ -596,5 +597,81 @@ private struct CircularBrightnessPanel: View {
             brightness = store.brightness(for: accessory) ?? brightness
         }
         .disabled(!accessory.isReachable)
+    }
+}
+
+
+private struct HEMMAControlSlider: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let tint: Color
+    let isEnabled: Bool
+    let onEditingChanged: (Bool) -> Void
+    let onCommit: (Double) -> Void
+
+    @State private var isDragging = false
+
+    private var fraction: Double {
+        guard range.upperBound > range.lowerBound else { return 0 }
+        return min(max((value - range.lowerBound) / (range.upperBound - range.lowerBound), 0), 1)
+    }
+
+    var body: some View {
+        GeometryReader { geometry in
+            let width = max(geometry.size.width - 20, 1)
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(HEMMATheme.elevatedSurface)
+                    .frame(height: 6)
+                Capsule()
+                    .fill(LinearGradient(colors: [tint.opacity(0.72), tint], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: max(6, width * fraction + 10), height: 6)
+                Circle()
+                    .fill(HEMMATheme.warmWhite)
+                    .frame(width: 20, height: 20)
+                    .overlay(Circle().strokeBorder(tint.opacity(0.8), lineWidth: 2))
+                    .shadow(color: tint.opacity(0.25), radius: 5, y: 2)
+                    .offset(x: width * fraction)
+            }
+            .frame(height: 30)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        guard isEnabled else { return }
+                        if !isDragging {
+                            isDragging = true
+                            onEditingChanged(true)
+                        }
+                        let x = min(max(gesture.location.x - 10, 0), width)
+                        let progress = x / width
+                        value = range.lowerBound + (range.upperBound - range.lowerBound) * progress
+                    }
+                    .onEnded { gesture in
+                        guard isEnabled else { return }
+                        let x = min(max(gesture.location.x - 10, 0), width)
+                        let progress = x / width
+                        value = range.lowerBound + (range.upperBound - range.lowerBound) * progress
+                        isDragging = false
+                        onEditingChanged(false)
+                        onCommit(value)
+                    }
+            )
+            .opacity(isEnabled ? 1 : 0.45)
+        }
+        .accessibilityElement()
+        .accessibilityLabel("Reglage")
+        .accessibilityValue("\(Int(value.rounded()))")
+        .accessibilityAdjustableAction { direction in
+            guard isEnabled else { return }
+            let step = (range.upperBound - range.lowerBound) / 100
+            switch direction {
+            case .increment: value = min(range.upperBound, value + step)
+            case .decrement: value = max(range.lowerBound, value - step)
+            @unknown default: break
+            }
+            onCommit(value)
+        }
     }
 }
