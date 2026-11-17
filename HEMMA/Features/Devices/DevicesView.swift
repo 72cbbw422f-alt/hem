@@ -59,6 +59,7 @@ struct DevicesView: View {
                 ))
                 .labelsHidden()
                 .tint(HEMMATheme.amber)
+                .disabled(store.isPowerCommandPending(for: accessory))
             } else if store.isLight(accessory) {
                 Text("Okänd status")
                     .font(.caption)
