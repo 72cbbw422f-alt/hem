@@ -37,13 +37,13 @@ struct RoomsView: View {
                                         .font(.title3.weight(.bold))
                                         .foregroundStyle(HEMMATheme.warmWhite)
                                     Spacer()
-                                    Text("\(home.rooms.count) RUM")
+                                    Text("\(store.visibleRooms(in: home).count) RUM")
                                         .font(.caption2.weight(.bold))
                                         .tracking(1.1)
                                         .foregroundStyle(HEMMATheme.secondaryText)
                                 }
                                 LazyVGrid(columns: columns, spacing: 12) {
-                                    ForEach(home.rooms, id: \.uniqueIdentifier) { room in
+                                    ForEach(store.visibleRooms(in: home), id: \.uniqueIdentifier) { room in
                                         roomTile(room)
                                     }
                                 }
