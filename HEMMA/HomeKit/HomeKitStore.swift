@@ -48,6 +48,28 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         revision += 1
     }
 
+
+    var scenes: [(home: HMHome, actionSet: HMActionSet)] {
+        homes.flatMap { home in
+            home.actionSets
+                .filter { $0.actionSetType == HMActionSetTypeUserDefined }
+                .map { (home: home, actionSet: $0) }
+        }
+    }
+
+    func activate(_ actionSet: HMActionSet, in home: HMHome) {
+        home.executeActionSet(actionSet) { [weak self] error in
+            Task { @MainActor in
+                if let error {
+                    self?.errorMessage = "Kunde inte starta \\(actionSet.name): \\(error.localizedDescription)"
+                } else {
+                    self?.errorMessage = nil
+                }
+                self?.revision += 1
+            }
+        }
+    }
+
     var roomCount: Int {
         homes.reduce(0) { $0 + $1.rooms.count }
     }
