@@ -377,7 +377,7 @@ struct LightControlCard: View {
                 if !editing { onCommit(value.wrappedValue) }
             }
             .tint(HEMMATheme.amber)
-            .disabled(!accessory.isReachable || store.isCharacteristicPending(for: accessory, type: type))
+            .disabled(!accessory.isReachable)
         }
     }
 
