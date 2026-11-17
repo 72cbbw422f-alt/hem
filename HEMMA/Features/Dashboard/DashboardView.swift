@@ -37,7 +37,16 @@ struct DashboardView: View {
             }
             .background(HEMMATheme.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .task { await weatherService.refresh() }
+            .task {
+                while !Task.isCancelled {
+                    await weatherService.refresh()
+                    do {
+                        try await Task.sleep(for: .seconds(900))
+                    } catch {
+                        break
+                    }
+                }
+            }
         }
         .background(HEMMATheme.background.ignoresSafeArea())
     }
