@@ -157,7 +157,11 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     /// The Apple TV hub is named "Hemmabio" in this HomeKit setup, not a physical room.
     func visibleRooms(in home: HMHome) -> [HMRoom] {
-        home.rooms.filter { $0.name.localizedCaseInsensitiveCompare("Hemmabio") != .orderedSame }
+        home.rooms.filter {
+            let name = $0.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            return name.localizedCaseInsensitiveCompare("Hemmabio") != .orderedSame &&
+                   name.localizedCaseInsensitiveCompare("Matsal") != .orderedSame
+        }
     }
 
     var roomCount: Int {
