@@ -24,6 +24,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     func homeManagerDidUpdateHomes(_ manager: HMHomeManager) {
         homes = manager.homes
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
@@ -49,6 +50,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     private func refreshHomes(_ manager: HMHomeManager) {
         homes = manager.homes
         homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         revision += 1
     }
@@ -94,6 +96,14 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         isLoading = false
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
         revision += 1
+    }
+
+    private func pruneDeletedFavoriteRooms() {
+        let existingRoomIDs = Set(homes.flatMap(\.rooms).map { $0.uniqueIdentifier.uuidString })
+        let retainedIDs = favoriteRoomIDs.intersection(existingRoomIDs)
+        guard retainedIDs != favoriteRoomIDs else { return }
+        favoriteRoomIDs = retainedIDs
+        UserDefaults.standard.set(Array(retainedIDs), forKey: "hemma.favoriteRoomIDs")
     }
 
     func isFavorite(_ room: HMRoom) -> Bool {
