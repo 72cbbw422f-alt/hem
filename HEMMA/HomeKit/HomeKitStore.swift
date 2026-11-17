@@ -100,6 +100,17 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         revision += 1
     }
 
+    func lightsAreOn(in room: HMRoom) -> Bool? {
+        let lights = room.accessories.filter(isLight)
+        let states = lights.compactMap(powerState(for:))
+        guard !lights.isEmpty, states.count == lights.count else { return nil }
+        return states.allSatisfy { $0 }
+    }
+
+    func setLights(in room: HMRoom, isOn: Bool) {
+        room.accessories.filter(isLight).forEach { setPower(isOn, for: $0) }
+    }
+
     var favoriteRooms: [HMRoom] {
         homes.flatMap(\.rooms).filter(isFavorite)
     }
