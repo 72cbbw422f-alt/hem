@@ -17,6 +17,8 @@ struct ScenesView: View {
 
                     if store.isLoading {
                         message("Ansluter till Apple Hem", detail: "Hämtar dina sparade scener.")
+                    } else if !store.isAuthorized {
+                        message("Åtkomst till Apple Hem saknas", detail: "Tillåt HEMMA att komma åt ditt hem i iPhone-inställningarna och försök igen.")
                     } else if store.scenes.isEmpty {
                         message("Inga scener hittades", detail: "Skapa scener i Apples Hem-app så visas de här.")
                     } else {
