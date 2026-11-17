@@ -90,6 +90,24 @@ private struct RoomDetailView: View {
 
     private var lights: [HMAccessory] { room.accessories.filter(store.isLight) }
 
+    private var roomLightingButton: some View {
+        Button {
+            store.setLights(in: room, isOn: store.lightsAreOn(in: room) != true)
+        } label: {
+            Label(
+                store.lightsAreOn(in: room) == true ? "Släck alla lampor i rummet" : "Tänd alla lampor i rummet",
+                systemImage: store.lightsAreOn(in: room) == true ? "lightbulb.slash.fill" : "lightbulb.2.fill"
+            )
+            .font(.headline)
+            .foregroundStyle(HEMMATheme.warmWhite)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(HEMMATheme.elevatedSurface, in: RoundedRectangle(cornerRadius: 16))
+        }
+        .buttonStyle(.plain)
+        .disabled(lights.allSatisfy { !$0.isReachable } || lights.allSatisfy { store.isPowerCommandPending(for: $0) })
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -103,6 +121,7 @@ private struct RoomDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: HEMMATheme.cardRadius))
                 } else {
+                    roomLightingButton
                     ForEach(lights, id: \.uniqueIdentifier) { accessory in
                         LightControlCard(accessory: accessory, store: store)
                     }
@@ -151,7 +170,7 @@ private struct LightControlCard: View {
                     ))
                     .labelsHidden()
                     .tint(HEMMATheme.amber)
-                .disabled(store.isPowerCommandPending(for: accessory))
+                    .disabled(store.isPowerCommandPending(for: accessory))
                 } else {
                     Text("Okänd status")
                         .font(.caption)
