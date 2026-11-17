@@ -179,12 +179,15 @@ struct RoomDetailView: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 ZStack(alignment: .bottomLeading) {
-                    LinearGradient(colors: [HEMMATheme.elevatedSurface, HEMMATheme.background], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Image(systemName: roomSymbol)
-                        .font(.system(size: 100, weight: .ultraLight))
-                        .foregroundStyle(.white.opacity(0.09))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
-                        .padding(20)
+                    AsyncImage(url: RoomPhotography.image(for: room.name)) { phase in
+                        switch phase {
+                        case .success(let image): image.resizable().scaledToFill()
+                        default: LinearGradient(colors: [HEMMATheme.elevatedSurface, HEMMATheme.background], startPoint: .topLeading, endPoint: .bottomTrailing)
+                        }
+                    }
+                    .frame(height: 205)
+                    .clipped()
+                    LinearGradient(colors: [.clear, .black.opacity(0.76)], startPoint: .center, endPoint: .bottom)
                     VStack(alignment: .leading, spacing: 7) {
                         Text("RUMSKONTROLL")
                             .font(.caption.weight(.bold))
@@ -192,15 +195,19 @@ struct RoomDetailView: View {
                             .foregroundStyle(HEMMATheme.amber)
                         Text(room.name)
                             .font(.system(size: 34, weight: .bold, design: .rounded))
-                            .foregroundStyle(HEMMATheme.warmWhite)
+                            .foregroundStyle(.white)
                         Text("\(lights.count) lampor · Apple Hem")
                             .font(.subheadline)
-                            .foregroundStyle(HEMMATheme.secondaryText)
+                            .foregroundStyle(.white.opacity(0.82))
                     }
                     .padding(20)
                 }
-                .frame(height: 180)
+                .frame(height: 205)
                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(.white.opacity(0.10), lineWidth: 1)
+                }
 
                 Button {
                     store.setLights(in: room, isOn: store.lightsAreOn(in: room) != true)
