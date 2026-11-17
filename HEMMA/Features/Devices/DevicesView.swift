@@ -179,6 +179,23 @@ struct DevicesView: View {
                         Text(!accessory.isReachable ? "Kan inte nås" : (isLight ? (state == true ? "Tänd" : state == false ? "Släckt" : "Status okänd") : "Tillgänglig"))
                             .font(.caption.weight(.medium))
                             .foregroundStyle(!accessory.isReachable ? Color.red : (state == true && isLight ? Color.green : state == false && isLight ? Color.red : HEMMATheme.secondaryText))
+                        if isLight, let brightness = store.brightness(for: accessory) {
+                            Spacer(minLength: 4)
+                            Text("\(Int(brightness.rounded()))%")
+                                .font(.caption.weight(.semibold).monospacedDigit())
+                                .foregroundStyle(HEMMATheme.warmWhite)
+                        }
+                    }
+                    if isLight, let brightness = store.brightness(for: accessory) {
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(HEMMATheme.elevatedSurface)
+                                Capsule().fill(HEMMATheme.amber)
+                                    .frame(width: geometry.size.width * min(max(brightness / 100, 0), 1))
+                            }
+                        }
+                        .frame(height: 4)
+                        .padding(.top, 2)
                     }
                 }
 
