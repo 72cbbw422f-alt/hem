@@ -51,3 +51,11 @@ SwiftUI screens -> Feature/domain layer -> HomeKit adapter -> Apple Home (includ
 - Custom cloud sync.
 - Complex automation authoring.
 - Apple Watch app.
+
+## Widget implementation constraints (verified against Apple documentation)
+- Interactive WidgetKit buttons and toggles must invoke App Intents; the intent must complete its action before returning so WidgetKit can reload the timeline.
+- Intents that need the main app's HomeKit access should explicitly use the main execution target rather than duplicating HomeKit state or prompting for a second permission context in the widget extension.
+- Widget timeline content must not imply a live HomeKit state unless it has been read from an authorized HomeKit manager. Unknown or stale values must be labelled as such.
+- Keep the first widget iteration conservative: prove an end-to-end all-lights action and confirmed result before adding room-specific controls.
+- App Group storage is not assumed for the sideload build. Do not make it a prerequisite until its signing and provisioning implications are validated for the distribution route.
+- HomeKit authorization is determined from `HMHomeManager.authorizationStatus`; never infer authorization merely because the homes callback ran.
