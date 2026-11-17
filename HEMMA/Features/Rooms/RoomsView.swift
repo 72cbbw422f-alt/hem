@@ -166,6 +166,10 @@ struct RoomDetailView: View {
     let room: HMRoom
     @ObservedObject var store: HomeKitStore
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedLightID: UUID?
+    private var selectedLight: HMAccessory? {
+        lights.first(where: { $0.uniqueIdentifier == selectedLightID }) ?? lights.first
+    }
     private var lights: [HMAccessory] { room.accessories.filter(store.isLight) }
 
     private var roomLightingTitle: String {
@@ -237,25 +241,38 @@ struct RoomDetailView: View {
                 .buttonStyle(.plain)
                 .disabled(!lights.contains(where: \.isReachable) || lights.contains(where: store.isPowerCommandPending(for:)))
 
-                if let dimmableLight = lights.first(where: { store.brightnessCharacteristic(for: $0) != nil }) {
-                    CircularBrightnessPanel(accessory: dimmableLight, store: store)
-                }
+                if !lights.isEmpty {
+                    VStack(alignment: .leading, spacing: 13) {
+                        HStack {
+                            Text("LJUS I RUMMET")
+                                .font(.caption.weight(.bold))
+                                .tracking(1.4)
+                                .foregroundStyle(HEMMATheme.amber)
+                            Spacer()
+                            Text("\(lights.filter { store.powerState(for: $0) == true }.count) av \(lights.count) tända")
+                                .font(.caption)
+                                .foregroundStyle(HEMMATheme.secondaryText)
+                        }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Belysning")
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(HEMMATheme.warmWhite)
-                    ForEach(lights, id: \.uniqueIdentifier) { accessory in
-                        LightControlCard(accessory: accessory, store: store)
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                            ForEach(lights, id: \.uniqueIdentifier) { accessory in
+                                roomLightButton(accessory)
+                            }
+                        }
                     }
-                    if lights.isEmpty {
-                        Text("Inga lampor i det här rummet ännu.")
-                            .font(.subheadline)
-                            .foregroundStyle(HEMMATheme.secondaryText)
-                            .padding(18)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 18))
+
+                    if let selectedLight, store.brightnessCharacteristic(for: selectedLight) != nil {
+                        CircularBrightnessPanel(accessory: selectedLight, store: store)
+                    } else if let selectedLight {
+                        LightControlCard(accessory: selectedLight, store: store)
                     }
+                } else {
+                    Text("Inga lampor i det här rummet ännu.")
+                        .font(.subheadline)
+                        .foregroundStyle(HEMMATheme.secondaryText)
+                        .padding(18)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 18))
                 }
 
                 if let error = store.errorMessage {
@@ -272,6 +289,47 @@ struct RoomDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
         .toolbar(.visible, for: .navigationBar)
+    }
+
+    private func roomLightButton(_ accessory: HMAccessory) -> some View {
+        let isSelected = selectedLight?.uniqueIdentifier == accessory.uniqueIdentifier
+        let isOn = store.powerState(for: accessory) == true
+        return Button {
+            if selectedLightID == accessory.uniqueIdentifier {
+                if accessory.isReachable, store.powerState(for: accessory) != nil,
+                   !store.isPowerCommandPending(for: accessory) {
+                    store.setPower(!isOn, for: accessory)
+                }
+            } else {
+                selectedLightID = accessory.uniqueIdentifier
+            }
+        } label: {
+            VStack(spacing: 9) {
+                Image(systemName: isOn ? "lightbulb.fill" : "lightbulb")
+                    .font(.system(size: 23, weight: .medium))
+                    .foregroundStyle(isOn ? HEMMATheme.amber : HEMMATheme.secondaryText)
+                    .frame(height: 28)
+                Text(accessory.name)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(HEMMATheme.warmWhite)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Text(isOn ? "På" : "Av")
+                    .font(.caption2)
+                    .foregroundStyle(isOn ? HEMMATheme.amber : HEMMATheme.secondaryText)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 6)
+            .background(isSelected ? HEMMATheme.amber.opacity(0.13) : HEMMATheme.surface, in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 17, style: .continuous)
+                    .strokeBorder(isSelected ? HEMMATheme.amber.opacity(0.8) : Color.white.opacity(0.05), lineWidth: isSelected ? 1.5 : 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .disabled(!accessory.isReachable || store.isPowerCommandPending(for: accessory))
+        .accessibilityLabel("\(accessory.name), \(isOn ? "på" : "av"). Välj lampan, tryck igen för att växla.")
     }
 
     private var roomSymbol: String {
