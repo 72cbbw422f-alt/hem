@@ -5,7 +5,7 @@ struct RootView: View {
         TabView {
             DashboardView()
                 .tabItem { Label("Hem", systemImage: "house.fill") }
-            PlaceholderView(title: "Rum", symbol: "square.grid.2x2.fill")
+            RoomsView()
                 .tabItem { Label("Rum", systemImage: "square.grid.2x2.fill") }
             PlaceholderView(title: "Enheter", symbol: "lightbulb.2")
                 .tabItem { Label("Enheter", systemImage: "lightbulb.2") }
