@@ -163,6 +163,29 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         homes.flatMap(\.accessories).filter(isLight)
     }
 
+    /// Current indoor readings exposed by HomeKit temperature-sensor services.
+    /// Values remain tied to their actual accessory and room; no synthetic rooms or averages.
+    var temperatureReadings: [(accessory: HMAccessory, roomName: String, celsius: Double)] {
+        homes.flatMap(\.accessories).compactMap { accessory in
+            guard let service = accessory.services.first(where: { $0.serviceType == HMServiceTypeTemperatureSensor }),
+                  let characteristic = service.characteristics.first(where: { $0.characteristicType == HMCharacteristicTypeCurrentTemperature }),
+                  let value = characteristic.value as? NSNumber else { return nil }
+            return (accessory, accessory.room?.name ?? "Hela hemmet", value.doubleValue)
+        }
+        .sorted { $0.roomName.localizedCaseInsensitiveCompare($1.roomName) == .orderedAscending }
+    }
+
+    var homeHubStatus: String {
+        guard let home = homes.first else { return "Inväntar hem" }
+        switch home.hubState {
+        case .connected: return "Ansluten"
+        case .disconnected: return "Frånkopplad"
+        case .pending: return "Ansluter"
+        case .notConfigured: return "Ingen hemhubb"
+        @unknown default: return "Okänd status"
+        }
+    }
+
     func isLight(_ accessory: HMAccessory) -> Bool {
         accessory.services.contains { $0.serviceType == HMServiceTypeLightbulb }
     }
