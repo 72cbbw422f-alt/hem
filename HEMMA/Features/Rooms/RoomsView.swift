@@ -449,46 +449,80 @@ private struct CircularBrightnessPanel: View {
     private var isOn: Bool { store.powerState(for: accessory) == true }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("LJUSSTYRKA")
-                        .font(.caption.weight(.bold))
-                        .tracking(1.4)
-                        .foregroundStyle(HEMMATheme.amber)
-                    Text(accessory.name)
-                        .font(.headline)
-                        .foregroundStyle(HEMMATheme.warmWhite)
-                }
-                Spacer()
-                Image(systemName: isOn ? "sun.max.fill" : "sun.min")
-                    .font(.title2)
+        HStack(spacing: 20) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("LJUSSTYRKA")
+                    .font(.caption.weight(.bold))
+                    .tracking(1.4)
                     .foregroundStyle(HEMMATheme.amber)
-            }
-
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text("\(Int(brightness.rounded()))")
-                    .font(.system(size: 42, weight: .bold, design: .rounded).monospacedDigit())
+                Text(accessory.name)
+                    .font(.headline)
                     .foregroundStyle(HEMMATheme.warmWhite)
-                Text("%")
-                    .font(.title3.weight(.semibold))
-                    .foregroundStyle(HEMMATheme.secondaryText)
-                Spacer()
-                Text("Dra för att dimra")
+                Spacer(minLength: 8)
+                Text("\(Int(brightness.rounded()))%")
+                    .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(HEMMATheme.warmWhite)
+                Text(isOn ? "Lampan är tänd" : "Lampan är släckt")
                     .font(.caption)
                     .foregroundStyle(HEMMATheme.secondaryText)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            Slider(value: $brightness, in: 0...100) { editing in
-                isEditing = editing
-                if !editing {
-                    store.setBrightness(brightness, for: accessory)
+            ZStack {
+                Capsule()
+                    .fill(HEMMATheme.background.opacity(0.85))
+                    .frame(width: 48, height: 190)
+                GeometryReader { geometry in
+                    let trackHeight = geometry.size.height
+                    ZStack(alignment: .bottom) {
+                        Capsule()
+                            .fill(HEMMATheme.elevatedSurface)
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(red: 1.0, green: 0.78, blue: 0.43), HEMMATheme.amber],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(height: max(8, trackHeight * brightness / 100))
+                    }
+                    .frame(width: 8, height: trackHeight)
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                isEditing = true
+                                let fraction = 1 - min(max(value.location.y / trackHeight, 0), 1)
+                                brightness = fraction * 100
+                            }
+                            .onEnded { _ in
+                                isEditing = false
+                                store.setBrightness(brightness, for: accessory)
+                            }
+                    )
                 }
+                .frame(width: 48, height: 190)
+                .padding(.vertical, 12)
+                Image(systemName: "sun.max.fill")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(HEMMATheme.warmWhite)
+                    .offset(y: -112)
+                    .allowsHitTesting(false)
             }
-            .tint(HEMMATheme.amber)
-            .disabled(!accessory.isReachable || store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness))
+            .frame(width: 48, height: 214)
+            .accessibilityElement()
             .accessibilityLabel("Ljusstyrka för \(accessory.name)")
             .accessibilityValue("\(Int(brightness.rounded())) procent")
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment: brightness = min(100, brightness + 5)
+                case .decrement: brightness = max(0, brightness - 5)
+                @unknown default: break
+                }
+                store.setBrightness(brightness, for: accessory)
+            }
         }
         .padding(20)
         .frame(maxWidth: .infinity)
@@ -507,5 +541,6 @@ private struct CircularBrightnessPanel: View {
             guard !isEditing, !store.isCharacteristicPending(for: accessory, type: HMCharacteristicTypeBrightness) else { return }
             brightness = store.brightness(for: accessory) ?? brightness
         }
+        .disabled(!accessory.isReachable)
     }
 }
