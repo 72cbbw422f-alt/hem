@@ -28,6 +28,12 @@ struct DevicesView: View {
                             deviceRow(accessory)
                         }
                     }
+
+                    if let error = store.errorMessage {
+                        Text(error)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
                 }
                 .padding(20)
             }
@@ -52,9 +58,13 @@ struct DevicesView: View {
                     .foregroundStyle(accessory.isReachable ? HEMMATheme.secondaryText : .red)
             }
             Spacer()
-            if store.isLight(accessory), let state = store.powerState(for: accessory) {
+            if store.isLight(accessory), !accessory.isReachable {
+                Text("Ej nåbar")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            } else if store.isLight(accessory), store.powerState(for: accessory) != nil {
                 Toggle("Enhet", isOn: Binding(
-                    get: { store.powerState(for: accessory) ?? state },
+                    get: { store.powerState(for: accessory) ?? false },
                     set: { store.setPower($0, for: accessory) }
                 ))
                 .labelsHidden()
