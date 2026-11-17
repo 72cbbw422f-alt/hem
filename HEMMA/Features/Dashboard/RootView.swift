@@ -7,9 +7,9 @@ struct RootView: View {
                 .tabItem { Label("Hem", systemImage: "house.fill") }
             RoomsView()
                 .tabItem { Label("Rum", systemImage: "square.grid.2x2.fill") }
-            PlaceholderView(title: "Enheter", symbol: "lightbulb.2")
+            DevicesView()
                 .tabItem { Label("Enheter", systemImage: "lightbulb.2") }
-            PlaceholderView(title: "Scener", symbol: "sparkles")
+            ScenesView()
                 .tabItem { Label("Scener", systemImage: "sparkles") }
             PlaceholderView(title: "Inställningar", symbol: "gearshape.fill")
                 .tabItem { Label("Inställningar", systemImage: "gearshape.fill") }
