@@ -78,6 +78,16 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         return (value as? NSNumber)?.doubleValue
     }
 
+    var allLightsAreOn: Bool? {
+        let states = lightAccessories.compactMap(powerState(for:))
+        guard !lightAccessories.isEmpty, states.count == lightAccessories.count else { return nil }
+        return states.allSatisfy { $0 }
+    }
+
+    func setAllLights(_ isOn: Bool) {
+        lightAccessories.forEach { setPower(isOn, for: $0) }
+    }
+
     func setPower(_ isOn: Bool, for accessory: HMAccessory) {
         guard accessory.isReachable, let characteristic = powerCharacteristic(for: accessory) else {
             errorMessage = "\(accessory.name) kan inte nås just nu."
