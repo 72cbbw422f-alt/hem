@@ -14,6 +14,7 @@ targets:
     platform: iOS
     sources:
       - path: HEMMA
+      - path: HEMMAWidget/LightingWidgetIntent.swift
     info:
       path: HEMMA/Resources/Info.plist
       properties:
