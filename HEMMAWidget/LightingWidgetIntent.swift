@@ -90,9 +90,12 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
                 $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
             }) else { throw WidgetLightingError.notFound(name) }
-            try await toggle(accessory)
-            let newState = powerCharacteristic(for: accessory)?.value as? Bool ?? false
-            LightingStatusStore.save(newState, kind: "device", name: accessory.name)
+            guard accessory.isReachable, let current = powerCharacteristic(for: accessory)?.value as? Bool else {
+                throw WidgetLightingError.unavailable(accessory.name)
+            }
+            let targetState = !current
+            try await write(targetState, to: accessory)
+            LightingStatusStore.save(targetState, kind: "device", name: accessory.name)
             return
         }
 
