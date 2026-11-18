@@ -26,14 +26,35 @@ struct RootView: View {
         }
         .environmentObject(homeStore)
         .onOpenURL { url in
-            guard url.scheme == "hemma", url.host == "lights" else { return }
-            let components = url.pathComponents.filter { $0 != "/" }
-            guard components.count == 2 else { return }
+            guard url.scheme?.lowercased() == "hemma",
+                  url.host?.lowercased() == "lights" else { return }
+            let components = url.pathComponents
+                .filter { $0 != "/" }
+                .map { $0.removingPercentEncoding ?? $0 }
+            guard components.count == 2,
+                  ["device", "room", "all"].contains(components[0]) else {
+                homeStore.reportWidgetError("Widgetkommandot hade ett ogiltigt format: \(url.absoluteString)")
+                return
+            }
             pendingWidgetAction = WidgetLightingAction(kind: components[0], name: components[1])
             performPendingWidgetActionIfPossible()
         }
         .onChange(of: homeStore.revision) { _, _ in
             performPendingWidgetActionIfPossible()
+        }
+        .onChange(of: homeStore.isLoading) { _, _ in
+            performPendingWidgetActionIfPossible()
+        }
+        .onChange(of: homeStore.isAuthorized) { _, _ in
+            performPendingWidgetActionIfPossible()
+        }
+        .alert("HEMMA – belysning", isPresented: Binding(
+            get: { homeStore.errorMessage != nil },
+            set: { if !$0 { homeStore.clearErrorMessage() } }
+        )) {
+            Button("OK") { homeStore.clearErrorMessage() }
+        } message: {
+            Text(homeStore.errorMessage ?? "Kommandot kunde inte genomföras.")
         }
     }
 
