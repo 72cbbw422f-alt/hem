@@ -187,6 +187,17 @@ struct ScenesView: View {
                     .font(.caption2.weight(.medium))
             }
             .foregroundStyle(HEMMATheme.secondaryText)
+
+            let accessories = affectedAccessoryNames(for: trigger)
+            if !accessories.isEmpty {
+                HStack(alignment: .top, spacing: 7) {
+                    Image(systemName: "lightbulb.2").font(.caption)
+                    Text("Påverkar: " + accessories.joined(separator: ", "))
+                        .font(.caption)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(HEMMATheme.secondaryText)
+            }
         }
         .padding(16)
         .background(LinearGradient(colors: [HEMMATheme.elevatedSurface, HEMMATheme.surface], startPoint: .topLeading, endPoint: .bottomTrailing), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -205,6 +216,16 @@ struct ScenesView: View {
             return "Utlöses av en händelse eller ett villkor"
         }
         return "Automatisering i Apple Hem"
+    }
+
+    private func affectedAccessoryNames(for trigger: HMTrigger) -> [String] {
+        let names = trigger.actionSets
+            .flatMap(\.actions)
+            .compactMap { action -> String? in
+                guard let writeAction = action as? HMCharacteristicWriteAction else { return nil }
+                return writeAction.characteristic.service.accessory.name
+            }
+        return Array(Set(names)).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
     }
 
     private func automationSymbol(for trigger: HMTrigger) -> String {
