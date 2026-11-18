@@ -434,8 +434,6 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
                 self?.pendingPowerAccessoryIDs.remove(accessory.uniqueIdentifier)
                 if let error {
                     self?.errorMessage = "Kunde inte styra \(accessory.name): \(error.localizedDescription)"
-                } else {
-                    self?.persistWidgetLightingStates()
                 }
                 self?.revision += 1
             }
