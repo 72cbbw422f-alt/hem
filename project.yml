@@ -15,6 +15,7 @@ targets:
     sources:
       - path: HEMMA
       - path: HEMMAWidget/LightingWidgetIntent.swift
+      - path: HEMMA/App/WidgetIntentForegroundMode.swift
     info:
       path: HEMMA/Resources/Info.plist
       properties:
