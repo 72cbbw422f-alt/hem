@@ -2,7 +2,7 @@ import AppIntents
 import Foundation
 import HomeKit
 
-struct ToggleWidgetLightIntent: AppIntent, ForegroundContinuableIntent {
+struct ToggleWidgetLightIntent: AppIntent {
     static var title: LocalizedStringResource = "Växla belysning"
     static var description = IntentDescription("Tänder eller släcker en lampa eller all belysning i ett rum.")
     static var openAppWhenRun = false
