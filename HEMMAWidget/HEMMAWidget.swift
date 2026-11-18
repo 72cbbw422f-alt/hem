@@ -17,27 +17,16 @@ struct HEMMAWidgetEntry: TimelineEntry {
 struct HEMMAWidgetProvider: TimelineProvider {
     private func snapshot() -> HEMMAWidgetEntry {
         let defaults = UserDefaults(suiteName: LightingStatusStore.suiteName)
-        let names = [
-            "device:Hall", "device:Niklas", "device:Villemo", "device:Sovrum",
-            "room:Hall", "room:Sovrum"
-        ]
+        let keys = ["device:Hall", "device:Niklas", "device:Villemo", "device:Sovrum", "room:Hall", "room:Sovrum"]
         var states: [String: Bool] = [:]
-        for name in names {
-            if let value = defaults?.object(forKey: name) as? Bool {
-                states[name] = value
-            }
+        for key in keys {
+            if let value = defaults?.object(forKey: key) as? Bool { states[key] = value }
         }
         return HEMMAWidgetEntry(date: .now, states: states)
     }
 
-    func placeholder(in context: Context) -> HEMMAWidgetEntry {
-        HEMMAWidgetEntry(date: .now, states: [:])
-    }
-
-    func getSnapshot(in context: Context, completion: @escaping (HEMMAWidgetEntry) -> Void) {
-        completion(snapshot())
-    }
-
+    func placeholder(in context: Context) -> HEMMAWidgetEntry { HEMMAWidgetEntry(date: .now, states: [:]) }
+    func getSnapshot(in context: Context, completion: @escaping (HEMMAWidgetEntry) -> Void) { completion(snapshot()) }
     func getTimeline(in context: Context, completion: @escaping (Timeline<HEMMAWidgetEntry>) -> Void) {
         completion(Timeline(entries: [snapshot()], policy: .never))
     }
@@ -45,7 +34,6 @@ struct HEMMAWidgetProvider: TimelineProvider {
 
 struct HEMMALightingWidget: Widget {
     let kind = "HEMMALightingWidget"
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: HEMMAWidgetProvider()) { entry in
             HEMMALightingWidgetView(entry: entry)
@@ -62,77 +50,82 @@ struct HEMMALightingWidget: Widget {
 
 private struct HEMMALightingWidgetView: View {
     let entry: HEMMAWidgetEntry
-    @Environment(\.widgetFamily) private var family
 
     private let controls: [LightingShortcut] = [
-        LightingShortcut(title: "Hall", subtitle: "En lampa", symbol: "door.left.hand.open", kind: "device", name: "Hall"),
-        LightingShortcut(title: "Niklas", subtitle: "Din lampa", symbol: "person.fill", kind: "device", name: "Niklas"),
-        LightingShortcut(title: "Villemo", subtitle: "Lampa", symbol: "person.fill", kind: "device", name: "Villemo"),
-        LightingShortcut(title: "Sovrum", subtitle: "En lampa", symbol: "bed.double.fill", kind: "device", name: "Sovrum"),
-        LightingShortcut(title: "Hall", subtitle: "All belysning", symbol: "door.left.hand.open", kind: "room", name: "Hall"),
-        LightingShortcut(title: "Sovrum", subtitle: "Alla lampor", symbol: "bed.double.fill", kind: "room", name: "Sovrum")
+        .init(title: "Hall", subtitle: "Lampa", symbol: "door.left.hand.open", kind: "device", name: "Hall"),
+        .init(title: "Niklas", subtitle: "Lampa", symbol: "person.fill", kind: "device", name: "Niklas"),
+        .init(title: "Villemo", subtitle: "Lampa", symbol: "person.fill", kind: "device", name: "Villemo"),
+        .init(title: "Sovrum", subtitle: "Lampa", symbol: "bed.double.fill", kind: "device", name: "Sovrum"),
+        .init(title: "Hall", subtitle: "Hela rummet", symbol: "door.left.hand.open", kind: "room", name: "Hall"),
+        .init(title: "Sovrum", subtitle: "Hela rummet", symbol: "bed.double.fill", kind: "room", name: "Sovrum")
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            HStack(spacing: 6) {
+        VStack(spacing: 8) {
+            HStack(spacing: 7) {
                 Image(systemName: "lightbulb.2.fill")
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(HEMMAWidgetStyle.amber)
                 Text("HEMMA")
-                    .font(.system(size: 10, weight: .bold))
-                    .tracking(1.3)
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.8)
                     .foregroundStyle(.white)
                 Spacer()
                 Text("BELYSNING")
                     .font(.system(size: 8, weight: .bold))
-                    .tracking(1)
+                    .tracking(1.4)
                     .foregroundStyle(HEMMAWidgetStyle.secondary)
             }
-            .frame(height: 13)
+            .padding(.horizontal, 3)
+            .frame(height: 18)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 6) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 7) {
                 ForEach(controls) { control in
-                    let isOn = entry.states[control.statusKey]
+                    let state = entry.states[control.statusKey]
                     Button(intent: ToggleWidgetLightIntent(kind: control.kind, name: control.name)) {
-                        HStack(spacing: 6) {
-                            Image(systemName: control.symbol)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(isOn == true ? HEMMAWidgetStyle.amber : HEMMAWidgetStyle.muted)
-                                .frame(width: 23, height: 23)
-                                .background((isOn == true ? HEMMAWidgetStyle.amber : HEMMAWidgetStyle.muted).opacity(0.13),
-                                            in: RoundedRectangle(cornerRadius: 8))
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(control.title)
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.white)
-                                    .lineLimit(1)
-                                Text(control.subtitle)
-                                    .font(.system(size: 8, weight: .medium))
-                                    .foregroundStyle(HEMMAWidgetStyle.secondary)
-                                    .lineLimit(1)
+                        VStack(spacing: 4) {
+                            HStack {
+                                Spacer(minLength: 0)
+                                Image(systemName: control.symbol)
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundStyle(state == true ? HEMMAWidgetStyle.amber : HEMMAWidgetStyle.muted)
+                                Spacer(minLength: 0)
+                                Circle()
+                                    .fill(indicatorColor(for: state))
+                                    .frame(width: 7, height: 7)
+                                    .shadow(color: state == true ? HEMMAWidgetStyle.amber.opacity(0.8) : .clear, radius: 4)
                             }
-                            Spacer(minLength: 0)
-                            Circle()
-                                .fill(isOn == true ? HEMMAWidgetStyle.amber : HEMMAWidgetStyle.muted.opacity(0.65))
-                                .frame(width: 6, height: 6)
-                                .shadow(color: isOn == true ? HEMMAWidgetStyle.amber.opacity(0.8) : .clear, radius: 4)
+                            Text(control.title)
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
+                            Text(control.subtitle)
+                                .font(.system(size: 8, weight: .medium))
+                                .foregroundStyle(HEMMAWidgetStyle.secondary)
+                                .lineLimit(1)
                         }
-                        .padding(.horizontal, 7)
-                        .frame(maxWidth: .infinity, minHeight: 42, maxHeight: 42)
-                        .background(.white.opacity(isOn == true ? 0.085 : 0.045),
-                                    in: RoundedRectangle(cornerRadius: 12))
+                        .frame(maxWidth: .infinity, minHeight: 49, maxHeight: 49)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(state == true ? HEMMAWidgetStyle.amber.opacity(0.10) : .white.opacity(0.045),
+                                    in: RoundedRectangle(cornerRadius: 13))
                         .overlay {
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder((isOn == true ? HEMMAWidgetStyle.amber : .white).opacity(isOn == true ? 0.28 : 0.07),
-                                              lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 13)
+                                .strokeBorder(state == true ? HEMMAWidgetStyle.amber.opacity(0.35) : .white.opacity(0.08), lineWidth: 1)
                         }
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(.horizontal, 9)
-        .padding(.vertical, 7)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+    }
+
+    private func indicatorColor(for state: Bool?) -> Color {
+        guard let state else { return HEMMAWidgetStyle.muted.opacity(0.45) }
+        return state ? HEMMAWidgetStyle.amber : Color(red: 0.34, green: 0.34, blue: 0.33)
     }
 }
 
@@ -142,7 +135,6 @@ private struct LightingShortcut: Identifiable {
     let symbol: String
     let kind: String
     let name: String
-
     var id: String { "\(kind)-\(name)" }
     var statusKey: String { "\(kind):\(name)" }
 }
