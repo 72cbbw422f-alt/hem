@@ -63,10 +63,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     private func persistWidgetLightingStates() {
-        for accessory in homes.flatMap(\\.accessories) where isLight(accessory) {
+        for accessory in homes.flatMap(\.accessories) where isLight(accessory) {
             if let state = powerState(for: accessory) { LightingStatusStore.save(state, kind: "device", name: accessory.name) }
         }
-        for room in homes.flatMap(\\.rooms) {
+        for room in homes.flatMap(\.rooms) {
             let lights = room.accessories.filter(isLight)
             let states = lights.compactMap(powerState(for:))
             if !lights.isEmpty && states.count == lights.count {
