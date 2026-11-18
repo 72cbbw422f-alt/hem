@@ -39,7 +39,6 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         CODE_SIGN_ENTITLEMENTS: HEMMA/HEMMA.entitlements
         SWIFT_VERSION: "5.0"
-        CODE_SIGN_ENTITLEMENTS: HEMMAWidget/HEMMAWidget.entitlements
     dependencies:
       - target: HEMMAWidget
         embed: true
@@ -62,3 +61,4 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
+        CODE_SIGN_ENTITLEMENTS: HEMMAWidget/HEMMAWidget.entitlements
