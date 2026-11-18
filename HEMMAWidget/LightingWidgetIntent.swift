@@ -19,7 +19,7 @@ enum LightingStatusStore {
 struct ToggleWidgetLightIntent: AppIntent {
     static var title: LocalizedStringResource = "Växla belysning"
     static var description = IntentDescription("Tänder eller släcker en lampa eller all belysning i ett rum.")
-    static var openAppWhenRun = false
+    static var openAppWhenRun = true
 
     @Parameter(title: "Typ") var kind: String
     @Parameter(title: "Namn") var name: String
