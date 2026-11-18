@@ -358,6 +358,35 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         pendingPowerAccessoryIDs.contains(accessory.uniqueIdentifier)
     }
 
+    func toggleLight(named name: String) {
+        guard let accessory = lightAccessories.first(where: {
+            $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
+        }) else {
+            errorMessage = "Hittar ingen lampa med namnet \(name)."
+            revision += 1
+            return
+        }
+        guard let currentState = powerState(for: accessory) else {
+            errorMessage = "Kan inte läsa status för \(accessory.name)."
+            revision += 1
+            return
+        }
+        setPower(!currentState, for: accessory)
+    }
+
+    func toggleRoom(named name: String) {
+        guard let room = homes.flatMap(\\.rooms).first(where: {
+            $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
+        }) else {
+            errorMessage = "Hittar inget rum med namnet \(name)."
+            revision += 1
+            return
+        }
+        let lights = room.accessories.filter(isLight)
+        let targetState = !lights.allSatisfy { powerState(for: $0) == true }
+        setLights(in: room, isOn: targetState)
+    }
+
     func setPower(_ isOn: Bool, for accessory: HMAccessory) {
         guard !isPowerCommandPending(for: accessory) else { return }
         guard accessory.isReachable, let characteristic = powerCharacteristic(for: accessory) else {
