@@ -1,6 +1,20 @@
 import AppIntents
 import Foundation
 import HomeKit
+import WidgetKit
+
+enum LightingStatusStore {
+    static let suiteName = "group.se.hemma.shared"
+    static func key(kind: String, name: String) -> String { "\(kind):\(name)" }
+
+    static func save(_ value: Bool, kind: String, name: String) {
+        UserDefaults(suiteName: suiteName)?.set(value, forKey: key(kind: kind, name: name))
+    }
+
+    static func value(kind: String, name: String) -> Bool? {
+        UserDefaults(suiteName: suiteName)?.object(forKey: key(kind: kind, name: name)) as? Bool
+    }
+}
 
 struct ToggleWidgetLightIntent: AppIntent {
     static var title: LocalizedStringResource = "Växla belysning"
@@ -23,6 +37,7 @@ struct ToggleWidgetLightIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult {
         try await WidgetHomeKitController.shared.toggle(kind: kind, name: name)
+        WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
 }
@@ -53,12 +68,21 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
         }
 
         let homes = manager.homes
+        // Refresh the shared snapshot so every tile has a current status.
+        for accessory in homes.flatMap(\.accessories) {
+            if let state = powerCharacteristic(for: accessory)?.value as? Bool {
+                LightingStatusStore.save(state, kind: "device", name: accessory.name)
+            }
+        }
+
         if kind == "device" {
             guard let accessory = homes.flatMap(\.accessories).first(where: {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
                 $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
             }) else { throw WidgetLightingError.notFound(name) }
             try await toggle(accessory)
+            let newState = powerCharacteristic(for: accessory)?.value as? Bool ?? false
+            LightingStatusStore.save(newState, kind: "device", name: accessory.name)
             return
         }
 
@@ -74,7 +98,9 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
         let turnOn = !lights.allSatisfy { powerCharacteristic(for: $0)?.value as? Bool == true }
         for light in lights where light.isReachable {
             try await write(turnOn, to: light)
+            LightingStatusStore.save(turnOn, kind: "device", name: light.name)
         }
+        LightingStatusStore.save(turnOn, kind: "room", name: room.name)
     }
 
     private func waitUntilReady() async throws {
