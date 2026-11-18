@@ -8,7 +8,9 @@ enum LightingStatusStore {
     static func key(kind: String, name: String) -> String { "\(kind):\(name)" }
 
     static func save(_ value: Bool, kind: String, name: String) {
-        UserDefaults(suiteName: suiteName)?.set(value, forKey: key(kind: kind, name: name))
+        let defaults = UserDefaults(suiteName: suiteName)
+        defaults?.set(value, forKey: key(kind: kind, name: name))
+        defaults?.synchronize()
     }
 
     static func value(kind: String, name: String) -> Bool? {
