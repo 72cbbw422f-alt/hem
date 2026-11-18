@@ -54,7 +54,7 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
 
         let homes = manager.homes
         if kind == "device" {
-            guard let accessory = homes.flatMap(\.accessories).first(where: {
+            guard let accessory = homes.flatMap(\\.accessories).first(where: {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
                 $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
             }) else { throw WidgetLightingError.notFound(name) }
@@ -63,7 +63,7 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
         }
 
         guard kind == "room",
-              let room = homes.flatMap(\.rooms).first(where: {
+              let room = homes.flatMap(\\.rooms).first(where: {
                   $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
               }) else { throw WidgetLightingError.notFound(name) }
 
@@ -79,7 +79,7 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
 
     private func waitUntilReady() async throws {
         if isReady { return }
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             readyWaiters.append(continuation)
         }
     }
@@ -95,7 +95,7 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
     private func powerCharacteristic(for accessory: HMAccessory) -> HMCharacteristic? {
         accessory.services
             .filter { $0.serviceType == HMServiceTypeLightbulb }
-            .flatMap(\.characteristics)
+            .flatMap(\\.characteristics)
             .first { $0.characteristicType == HMCharacteristicTypePowerState }
     }
 
@@ -103,7 +103,7 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
         guard accessory.isReachable, let characteristic = powerCharacteristic(for: accessory) else {
             throw WidgetLightingError.unavailable(accessory.name)
         }
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             characteristic.writeValue(value) { error in
                 if let error { continuation.resume(throwing: error) }
                 else { continuation.resume() }
@@ -121,9 +121,9 @@ private enum WidgetLightingError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notAuthorized: return "HEMMA saknar behörighet till Apple Hem. Öppna appen och kontrollera HomeKit-åtkomsten."
-        case .notFound(let name): return "Hittar ingen lampa eller inget rum med namnet \(name)."
-        case .noLights(let name): return "Det finns inga lampor i rummet \(name)."
-        case .unavailable(let name): return "\(name) kan inte nås eller saknar strömbrytare."
+        case .notFound(let name): return "Hittar ingen lampa eller inget rum med namnet \\(name)."
+        case .noLights(let name): return "Det finns inga lampor i rummet \\(name)."
+        case .unavailable(let name): return "\\(name) kan inte nås eller saknar strömbrytare."
         }
     }
 }
