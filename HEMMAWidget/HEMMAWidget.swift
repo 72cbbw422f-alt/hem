@@ -40,7 +40,7 @@ struct HEMMALightingWidget: Widget {
 }
 
 private struct HEMMALightingWidgetView: View {
-    @Environment(\\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var family
 
     private let controls: [LightingShortcut] = [
         LightingShortcut(title: "Hall", subtitle: "En lampa", symbol: "door.left.hand.open", kind: "device", name: "Hall"),
@@ -112,8 +112,8 @@ private struct LightingShortcut: Identifiable {
     let kind: String
     let name: String
 
-    var id: String { "\\(kind)-\\(name)" }
-    var url: URL { URL(string: "hemma://lights/\\(kind)/\\(name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name)")! }
+    var id: String { "\(kind)-\(name)" }
+    var url: URL { URL(string: "hemma://lights/\(kind)/\(name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name)")! }
 }
 
 @main
