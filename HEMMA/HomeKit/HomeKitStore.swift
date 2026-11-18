@@ -375,7 +375,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func toggleRoom(named name: String) {
-        guard let room = homes.flatMap(\\.rooms).first(where: {
+        guard let room = homes.flatMap(\.rooms).first(where: {
             $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame
         }) else {
             errorMessage = "Hittar inget rum med namnet \(name)."
@@ -383,6 +383,11 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
             return
         }
         let lights = room.accessories.filter(isLight)
+        guard !lights.isEmpty else {
+            errorMessage = "Det finns inga lampor i rummet \(room.name)."
+            revision += 1
+            return
+        }
         let targetState = !lights.allSatisfy { powerState(for: $0) == true }
         setLights(in: room, isOn: targetState)
     }
