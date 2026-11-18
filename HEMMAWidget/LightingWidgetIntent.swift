@@ -75,6 +75,16 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
             }
         }
 
+        for room in homes.flatMap(\.rooms) {
+            let lights = room.accessories.filter {
+                $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
+            }
+            if !lights.isEmpty {
+                let isOn = lights.allSatisfy { powerCharacteristic(for: $0)?.value as? Bool == true }
+                LightingStatusStore.save(isOn, kind: "room", name: room.name)
+            }
+        }
+
         if kind == "device" {
             guard let accessory = homes.flatMap(\.accessories).first(where: {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
