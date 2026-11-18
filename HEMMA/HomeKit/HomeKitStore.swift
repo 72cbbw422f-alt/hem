@@ -1,6 +1,7 @@
 import Combine
 import Foundation
 import HomeKit
+import WidgetKit
 
 @MainActor
 final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMAccessoryDelegate {
@@ -30,6 +31,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
+        persistWidgetLightingStates()
         revision += 1
     }
 
@@ -42,6 +44,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     }
 
     func accessory(_ accessory: HMAccessory, service: HMService, didUpdateValueFor characteristic: HMCharacteristic) {
+        if characteristic.characteristicType == HMCharacteristicTypePowerState { persistWidgetLightingStates() }
         revision += 1
     }
 
@@ -55,9 +58,23 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
+        persistWidgetLightingStates()
         revision += 1
     }
 
+    private func persistWidgetLightingStates() {
+        for accessory in homes.flatMap(\\.accessories) where isLight(accessory) {
+            if let state = powerState(for: accessory) { LightingStatusStore.save(state, kind: "device", name: accessory.name) }
+        }
+        for room in homes.flatMap(\\.rooms) {
+            let lights = room.accessories.filter(isLight)
+            let states = lights.compactMap(powerState(for:))
+            if !lights.isEmpty && states.count == lights.count {
+                LightingStatusStore.save(states.allSatisfy { $0 }, kind: "room", name: room.name)
+            }
+        }
+        WidgetCenter.shared.reloadAllTimelines()
+    }
 
     var scenes: [(home: HMHome, actionSet: HMActionSet)] {
         homes.flatMap { home in
