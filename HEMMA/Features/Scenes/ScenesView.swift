@@ -223,7 +223,7 @@ struct ScenesView: View {
             .flatMap(\.actions)
             .compactMap { action -> String? in
                 guard let writeAction = action as? HMCharacteristicWriteAction<NSNumber> else { return nil }
-                return writeAction.characteristic.service.accessory.name
+                return writeAction.characteristic.service?.accessory?.name
             }
         return Array(Set(names)).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
     }
