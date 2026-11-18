@@ -2,7 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var homeStore = HomeKitStore()
-    @State private var pendingWidgetLightingAction = false
+    @State private var pendingWidgetAction: WidgetLightingAction?
 
     var body: some View {
         ZStack {
@@ -26,8 +26,10 @@ struct RootView: View {
         }
         .environmentObject(homeStore)
         .onOpenURL { url in
-            guard url.scheme == "hemma", url.host == "lights", url.path == "/toggle" else { return }
-            pendingWidgetLightingAction = true
+            guard url.scheme == "hemma", url.host == "lights" else { return }
+            let components = url.pathComponents.filter { $0 != "/" }
+            guard components.count == 2 else { return }
+            pendingWidgetAction = WidgetLightingAction(kind: components[0], name: components[1])
             performPendingWidgetActionIfPossible()
         }
         .onChange(of: homeStore.revision) { _, _ in
@@ -36,14 +38,24 @@ struct RootView: View {
     }
 
     private func performPendingWidgetActionIfPossible() {
-        guard pendingWidgetLightingAction, !homeStore.isLoading else { return }
+        guard let action = pendingWidgetAction, !homeStore.isLoading else { return }
         guard homeStore.isAuthorized else {
             // Keep the action unexecuted; the dashboard explains how to grant Home access.
             return
         }
-        pendingWidgetLightingAction = false
-        homeStore.setAllLights(homeStore.allLightsAreOn != true)
+        pendingWidgetAction = nil
+        switch action.kind {
+        case "device": homeStore.toggleLight(named: action.name)
+        case "room": homeStore.toggleRoom(named: action.name)
+        case "all": homeStore.setAllLights(homeStore.allLightsAreOn != true)
+        default: break
+        }
     }
+}
+
+private struct WidgetLightingAction {
+    let kind: String
+    let name: String
 }
 
 private struct PlaceholderView: View {
