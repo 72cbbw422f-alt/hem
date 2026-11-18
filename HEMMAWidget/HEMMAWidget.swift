@@ -73,7 +73,7 @@ private struct HEMMALightingWidgetView: View {
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 9) {
                 ForEach(visibleControls) { control in
-                    Link(destination: control.url) {
+                    Button(intent: ToggleWidgetLightIntent(kind: control.kind, name: control.name)) {
                         VStack(alignment: .leading, spacing: 7) {
                             Image(systemName: control.symbol)
                                 .font(.system(size: 16, weight: .semibold))
@@ -113,7 +113,6 @@ private struct LightingShortcut: Identifiable {
     let name: String
 
     var id: String { "\(kind)-\(name)" }
-    var url: URL { URL(string: "hemma://lights/\(kind)/\(name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name)")! }
 }
 
 @main
