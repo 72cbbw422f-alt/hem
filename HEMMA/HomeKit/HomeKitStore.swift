@@ -118,6 +118,16 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         }
     }
 
+    func clearErrorMessage() {
+        errorMessage = nil
+        revision += 1
+    }
+
+    func reportWidgetError(_ message: String) {
+        errorMessage = message
+        revision += 1
+    }
+
     func refresh() {
         // HomeKit keeps HMHomeManager synchronized automatically; refresh the
         // published snapshot from its current state instead of calling a
