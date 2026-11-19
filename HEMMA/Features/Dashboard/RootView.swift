@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(\\.scenePhase) private var scenePhase
     @StateObject private var homeStore = HomeKitStore()
     @State private var pendingWidgetAction: WidgetLightingAction?
 
@@ -25,6 +26,12 @@ struct RootView: View {
             .background(HEMMATheme.background)
         }
         .environmentObject(homeStore)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                homeStore.refresh()
+                homeStore.requestFreshLightingStates()
+            }
+        }
         .onOpenURL { url in
             guard url.scheme?.lowercased() == "hemma",
                   url.host?.lowercased() == "lights" else { return }
