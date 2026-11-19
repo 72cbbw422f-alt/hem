@@ -74,7 +74,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         guard isLight(accessory) else { return }
         for characteristic in accessory.services
             .filter({ $0.serviceType == HMServiceTypeLightbulb })
-            .flatMap(\\.characteristics)
+            .flatMap { $0.characteristics }
             where characteristic.characteristicType == HMCharacteristicTypePowerState {
             characteristic.enableNotification(true) { _ in }
         }
