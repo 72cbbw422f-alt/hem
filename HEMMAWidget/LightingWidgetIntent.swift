@@ -19,7 +19,7 @@ enum LightingStatusStore {
 struct ToggleWidgetLightIntent: AppIntent {
     static var title: LocalizedStringResource = "Växla belysning"
     static var description = IntentDescription("Tänder eller släcker en lampa eller all belysning i ett rum.")
-    static var openAppWhenRun = true
+    static var openAppWhenRun = false
 
     @Parameter(title: "Typ") var kind: String
     @Parameter(title: "Namn") var name: String
@@ -90,12 +90,9 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
                 $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
             }) else { throw WidgetLightingError.notFound(name) }
-            guard accessory.isReachable, let current = powerCharacteristic(for: accessory)?.value as? Bool else {
-                throw WidgetLightingError.unavailable(accessory.name)
-            }
-            let targetState = !current
-            try await write(targetState, to: accessory)
-            LightingStatusStore.save(targetState, kind: "device", name: accessory.name)
+            try await toggle(accessory)
+            let newState = powerCharacteristic(for: accessory)?.value as? Bool ?? false
+            LightingStatusStore.save(newState, kind: "device", name: accessory.name)
             return
         }
 
