@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RootView: View {
-    @Environment(\\.scenePhase) private var scenePhase
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var homeStore = HomeKitStore()
     @State private var pendingWidgetAction: WidgetLightingAction?
 
