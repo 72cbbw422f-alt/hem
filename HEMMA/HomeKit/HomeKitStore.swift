@@ -74,7 +74,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         guard isLight(accessory) else { return }
         for characteristic in accessory.services
             .filter({ $0.serviceType == HMServiceTypeLightbulb })
-            .flatMap { $0.characteristics }
+            .flatMap({ $0.characteristics })
             where characteristic.characteristicType == HMCharacteristicTypePowerState {
             characteristic.enableNotification(true) { _ in }
         }
@@ -184,7 +184,7 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
     /// the cached values held by HMHomeManager after an external automation.
     func requestFreshLightingStates() {
         let characteristics = homes
-            .flatMap(\\.accessories)
+            .flatMap { $0.accessories }
             .filter(isLight)
             .compactMap(powerCharacteristic(for:))
         guard !characteristics.isEmpty else {
