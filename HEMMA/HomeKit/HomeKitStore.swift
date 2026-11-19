@@ -26,7 +26,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     func homeManagerDidUpdateHomes(_ manager: HMHomeManager) {
         homes = manager.homes
-        homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        homes.flatMap(\.accessories).forEach { accessory in
+            accessory.delegate = self
+            enableLightingStatusUpdates(for: accessory)
+        }
         pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
@@ -54,12 +57,27 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
 
     private func refreshHomes(_ manager: HMHomeManager) {
         homes = manager.homes
-        homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        homes.flatMap(\.accessories).forEach { accessory in
+            accessory.delegate = self
+            enableLightingStatusUpdates(for: accessory)
+        }
         pruneDeletedFavoriteRooms()
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
         persistWidgetLightingStates()
         revision += 1
+    }
+
+    /// Subscribe to HomeKit On-characteristic changes so external automations
+    /// can refresh the shared widget snapshot while the app is active.
+    private func enableLightingStatusUpdates(for accessory: HMAccessory) {
+        guard isLight(accessory) else { return }
+        for characteristic in accessory.services
+            .filter({ $0.serviceType == HMServiceTypeLightbulb })
+            .flatMap(\\.characteristics)
+            where characteristic.characteristicType == HMCharacteristicTypePowerState {
+            characteristic.enableNotification(true) { _ in }
+        }
     }
 
     private func persistWidgetLightingStates() {
@@ -151,7 +169,10 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         // nonexistent reload API.
         isLoading = true
         homes = manager.homes
-        homes.flatMap(\.accessories).forEach { $0.delegate = self }
+        homes.flatMap(\.accessories).forEach { accessory in
+            accessory.delegate = self
+            enableLightingStatusUpdates(for: accessory)
+        }
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
