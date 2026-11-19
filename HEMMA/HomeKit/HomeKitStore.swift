@@ -176,7 +176,34 @@ final class HomeKitStore: NSObject, ObservableObject, HMHomeManagerDelegate, HMA
         isAuthorized = manager.authorizationStatus.contains(.authorized)
         isLoading = false
         errorMessage = isAuthorized ? nil : "HEMMA saknar behörighet till Apple Hem. Kontrollera appens integritetsinställningar."
+        requestFreshLightingStates()
         revision += 1
+    }
+
+    /// Ask HomeKit for fresh characteristic values instead of relying only on
+    /// the cached values held by HMHomeManager after an external automation.
+    func requestFreshLightingStates() {
+        let characteristics = homes
+            .flatMap(\\.accessories)
+            .filter(isLight)
+            .compactMap(powerCharacteristic(for:))
+        guard !characteristics.isEmpty else {
+            persistWidgetLightingStates()
+            return
+        }
+
+        let group = DispatchGroup()
+        for characteristic in characteristics {
+            group.enter()
+            characteristic.readValue { _ in group.leave() }
+        }
+        group.notify(queue: .main) { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.persistWidgetLightingStates()
+                self.revision += 1
+            }
+        }
     }
 
     private func pruneDeletedFavoriteRooms() {
