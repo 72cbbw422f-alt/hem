@@ -90,9 +90,8 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
                 $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame &&
                 $0.services.contains { $0.serviceType == HMServiceTypeLightbulb }
             }) else { throw WidgetLightingError.notFound(name) }
-            try await toggle(accessory)
-            let newState = powerCharacteristic(for: accessory)?.value as? Bool ?? false
-            LightingStatusStore.save(newState, kind: "device", name: accessory.name)
+            let confirmedState = try await toggle(accessory)
+            LightingStatusStore.save(confirmedState, kind: "device", name: accessory.name)
             return
         }
 
@@ -120,12 +119,16 @@ private final class WidgetHomeKitController: NSObject, HMHomeManagerDelegate {
         }
     }
 
-    private func toggle(_ accessory: HMAccessory) async throws {
+    /// Returns the requested state only after HomeKit acknowledges the write.
+    /// Never infer "off" from a missing or stale characteristic value.
+    private func toggle(_ accessory: HMAccessory) async throws -> Bool {
         guard accessory.isReachable, let characteristic = powerCharacteristic(for: accessory),
               let current = characteristic.value as? Bool else {
             throw WidgetLightingError.unavailable(accessory.name)
         }
-        try await write(!current, to: accessory)
+        let targetState = !current
+        try await write(targetState, to: accessory)
+        return targetState
     }
 
     private func powerCharacteristic(for accessory: HMAccessory) -> HMCharacteristic? {
