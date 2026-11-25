@@ -1,8 +1,16 @@
 name: iOS build
 on:
   workflow_dispatch:
-  push:
+  pull_request:
     branches: [main]
+    paths:
+      - "HEMMA/**"
+      - "HEMMAWidget/**"
+      - "Scripts/**"
+      - "project.yml"
+      - ".github/workflows/ios-build.yml"
+  push:
+    branches: [main, "fix/**", "ci/**"]
     paths:
       - "HEMMA/**"
       - "HEMMAWidget/**"
